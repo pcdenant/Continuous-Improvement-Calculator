@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI Savings Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e14;
+            --surface: #1a1f29;
+            --border: #2d3340;
+            --text-primary: #e6e8eb;
+            --text-secondary: #8b92a0;
+            --accent: #00d4aa;
+            --accent-dim: #00aa88;
+            --danger: #ff6b6b;
+            --warning: #ffd93d;
+            --success: #6bcf7f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+            font-weight: 400;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="number"],
+        input[type="date"] {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.65rem 0.85rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-family: 'IBM Plex Mono', monospace;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+        }
+
+        .unit {
+            position: absolute;
+            right: 0.85rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-family: 'IBM Plex Mono', monospace;
+            pointer-events: none;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .summary {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .summary-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-item {
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 6px;
+            border-left: 3px solid var(--border);
+        }
+
+        .summary-item.positive {
+            border-left-color: var(--success);
+        }
+
+        .summary-item.negative {
+            border-left-color: var(--danger);
+        }
+
+        .summary-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .summary-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .summary-value.positive {
+            color: var(--success);
+        }
+
+        .summary-value.negative {
+            color: var(--danger);
+        }
+
+        .summary-period {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .total-line {
+            border-top: 2px solid var(--border);
+            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .total-value {
+            font-size: 2rem;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn:hover {
+            background: var(--accent-dim);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .breakdown {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+
+        .breakdown.visible {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .breakdown-section {
+            margin-bottom: 2rem;
+        }
+
+        .breakdown-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .breakdown-header {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .breakdown-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .breakdown-detail:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-label {
+            color: var(--text-secondary);
+        }
+
+        .breakdown-value {
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        .note {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(0, 212, 170, 0.05);
+            border-left: 3px solid var(--accent);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .total-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CI Savings Calculator</h1>
+            <p class="subtitle">Quantify the business impact of continuous improvement initiatives</p>
+        </header>
+
+        <div class="grid">
+            <!-- Team Economics -->
+            <div class="section">
+                <h2 class="section-title">Team Economics</h2>
+                <div class="input-group">
+                    <label for="blendRate">Blend Rate</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="blendRate" value="125" step="1" min="0">
+                        <span class="unit">$/hour</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="hoursPerDay">Hours per Day</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="hoursPerDay" value="6.5" step="0.5" min="0">
+                        <span class="unit">hours</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="teamSize">Team Size</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="teamSize" value="7" step="1" min="1">
+                        <span class="unit">people</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="workingDaysPerWeek">Working Days per Week</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="workingDaysPerWeek" value="5" step="1" min="1" max="7">
+                        <span class="unit">days</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="workingDaysPerMonth">Working Days per Month</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="workingDaysPerMonth" value="20" step="1" min="1">
+                        <span class="unit">days</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Period -->
+            <div class="section">
+                <h2 class="section-title">Period</h2>
+                <div class="input-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" value="2024-08-01">
+                </div>
+                <div class="input-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" value="2025-01-31">
+                </div>
+            </div>
+
+            <!-- Flow Metrics -->
+            <div class="section">
+                <h2 class="section-title">Flow Metrics</h2>
+                <div class="input-group">
+                    <label>Throughput (items/month)</label>
+                    <div class="metrics-grid">
+                        <div>
+                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Previous</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="throughputPrev" value="50" step="1" min="0">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Current</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="throughputCurr" value="40" step="1" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Lead Time (days)</label>
+                    <div class="metrics-grid">
+                        <div>
+                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Previous</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="leadTimePrev" value="45" step="1" min="0">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Current</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="leadTimeCurr" value="25" step="1" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>WIP (items)</label>
+                    <div class="metrics-grid">
+                        <div>
+                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Previous</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="wipPrev" value="25" step="1" min="0">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Current</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="wipCurr" value="25" step="1" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Defects (count/month)</label>
+                    <div class="metrics-grid">
+                        <div>
+                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Previous</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="defectsPrev" value="8" step="1" min="0">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Current</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="defectsCurr" value="25" step="1" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary">
+            <h2 class="summary-title">Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item" id="productivityItem">
+                    <div class="summary-label">Productivity</div>
+                    <div class="summary-value" id="productivityPeriod">$0</div>
+                    <div class="summary-period" id="productivityAnnual">Annual: $0</div>
+                </div>
+                <div class="summary-item" id="timeToMarketItem">
+                    <div class="summary-label">Time-to-Market</div>
+                    <div class="summary-value" id="timeToMarketPeriod">$0</div>
+                    <div class="summary-period" id="timeToMarketAnnual">Annual: $0</div>
+                </div>
+                <div class="summary-item" id="efficiencyItem">
+                    <div class="summary-label">Efficiency (WIP)</div>
+                    <div class="summary-value" id="efficiencyPeriod">$0</div>
+                    <div class="summary-period" id="efficiencyAnnual">Annual: $0</div>
+                </div>
+                <div class="summary-item" id="qualityItem">
+                    <div class="summary-label">Quality</div>
+                    <div class="summary-value" id="qualityPeriod">$0</div>
+                    <div class="summary-period" id="qualityAnnual">Annual: $0</div>
+                </div>
+            </div>
+
+            <div class="total-line">
+                <div class="summary-grid">
+                    <div class="summary-item" id="totalItem">
+                        <div class="summary-label">Total Impact</div>
+                        <div class="summary-value total-value" id="totalPeriod">$0</div>
+                        <div class="summary-period" id="totalAnnual">Annual: $0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note">
+                <strong>Positive values</strong> = Savings (green) • <strong>Negative values</strong> = Cost increase (red)
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button class="btn" id="toggleBreakdown">Show Breakdown</button>
+            </div>
+
+            <!-- Breakdown -->
+            <div class="breakdown" id="breakdown">
+                <div class="breakdown-section">
+                    <div class="breakdown-header">Time-to-Market Details</div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Lead Time Change (days)</span>
+                        <span class="breakdown-value" id="bd-lt-change">0</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Daily Cost</span>
+                        <span class="breakdown-value" id="bd-daily-cost">$0</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Items per Month</span>
+                        <span class="breakdown-value" id="bd-items-month">0</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Period (months)</span>
+                        <span class="breakdown-value" id="bd-months">0</span>
+                    </div>
+                </div>
+
+                <div class="breakdown-section">
+                    <div class="breakdown-header">Productivity Details</div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Cost per Item (Previous)</span>
+                        <span class="breakdown-value" id="bd-cost-prev">$0</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Cost per Item (Current)</span>
+                        <span class="breakdown-value" id="bd-cost-curr">$0</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Change per Item</span>
+                        <span class="breakdown-value" id="bd-change-item">$0</span>
+                    </div>
+                </div>
+
+                <div class="breakdown-section">
+                    <div class="breakdown-header">Efficiency (WIP) Details</div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">WIP Change</span>
+                        <span class="breakdown-value" id="bd-wip-change">0</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Cost per Item</span>
+                        <span class="breakdown-value" id="bd-wip-cost">$0</span>
+                    </div>
+                </div>
+
+                <div class="breakdown-section">
+                    <div class="breakdown-header">Quality Details</div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Defects Change</span>
+                        <span class="breakdown-value" id="bd-defects-change">0</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Cost per Item</span>
+                        <span class="breakdown-value" id="bd-defects-cost">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Calculate months between dates
+        function calculateMonths(start, end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 
+                         + (endDate.getMonth() - startDate.getMonth());
+            return Math.max(1, months);
+        }
+
+        // Format currency
+        function formatCurrency(value) {
+            const formatted = Math.abs(value).toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            return value >= 0 ? `$${formatted}` : `-$${formatted}`;
+        }
+
+        // Update summary item styling
+        function updateItemStyle(element, value) {
+            element.classList.remove('positive', 'negative');
+            if (value > 0) {
+                element.classList.add('positive');
+            } else if (value < 0) {
+                element.classList.add('negative');
+            }
+        }
+
+        // Calculate and update
+        function calculate() {
+            // Get team economics
+            const blendRate = parseFloat(document.getElementById('blendRate').value);
+            const hoursPerDay = parseFloat(document.getElementById('hoursPerDay').value);
+            const teamSize = parseFloat(document.getElementById('teamSize').value);
+            const workingDaysPerWeek = parseFloat(document.getElementById('workingDaysPerWeek').value);
+            const workingDaysPerMonth = parseFloat(document.getElementById('workingDaysPerMonth').value);
+
+            // Calculate costs
+            const dailyCost = blendRate * hoursPerDay * teamSize;
+            const weeklyCost = dailyCost * workingDaysPerWeek;
+            const monthlyCost = dailyCost * workingDaysPerMonth;
+
+            // Get period
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const months = calculateMonths(startDate, endDate);
+
+            // Get flow metrics
+            const throughputPrev = parseFloat(document.getElementById('throughputPrev').value);
+            const throughputCurr = parseFloat(document.getElementById('throughputCurr').value);
+            const leadTimePrev = parseFloat(document.getElementById('leadTimePrev').value);
+            const leadTimeCurr = parseFloat(document.getElementById('leadTimeCurr').value);
+            const wipPrev = parseFloat(document.getElementById('wipPrev').value);
+            const wipCurr = parseFloat(document.getElementById('wipCurr').value);
+            const defectsPrev = parseFloat(document.getElementById('defectsPrev').value);
+            const defectsCurr = parseFloat(document.getElementById('defectsCurr').value);
+
+            // TIME-TO-MARKET (reduction in lead time = savings = positive)
+            const leadTimeChange = leadTimeCurr - leadTimePrev;
+            const ttmPeriod = -leadTimeChange * dailyCost * throughputCurr * months;
+            const ttmAnnual = (ttmPeriod / months) * 12;
+
+            // PRODUCTIVITY (reduction in cost/item = savings = positive)
+            const costPerItemPrev = monthlyCost / throughputPrev;
+            const costPerItemCurr = monthlyCost / throughputCurr;
+            const changePerItem = costPerItemCurr - costPerItemPrev;
+            const productivityPeriod = -changePerItem * throughputCurr * months;
+            const productivityAnnual = (productivityPeriod / months) * 12;
+
+            // EFFICIENCY (reduction in WIP = savings = positive)
+            const wipChange = wipCurr - wipPrev;
+            const efficiencyPeriod = -wipChange * costPerItemCurr * months;
+            const efficiencyAnnual = (efficiencyPeriod / months) * 12;
+
+            // QUALITY (reduction in defects = savings = positive)
+            const defectsChange = defectsCurr - defectsPrev;
+            const qualityPeriod = -defectsChange * costPerItemCurr * months;
+            const qualityAnnual = (qualityPeriod / months) * 12;
+
+            // TOTALS
+            const totalPeriod = ttmPeriod + productivityPeriod + efficiencyPeriod + qualityPeriod;
+            const totalAnnual = ttmAnnual + productivityAnnual + efficiencyAnnual + qualityAnnual;
+
+            // Update summary
+            document.getElementById('productivityPeriod').textContent = formatCurrency(productivityPeriod);
+            document.getElementById('productivityAnnual').textContent = `Annual: ${formatCurrency(productivityAnnual)}`;
+            updateItemStyle(document.getElementById('productivityItem'), productivityPeriod);
+
+            document.getElementById('timeToMarketPeriod').textContent = formatCurrency(ttmPeriod);
+            document.getElementById('timeToMarketAnnual').textContent = `Annual: ${formatCurrency(ttmAnnual)}`;
+            updateItemStyle(document.getElementById('timeToMarketItem'), ttmPeriod);
+
+            document.getElementById('efficiencyPeriod').textContent = formatCurrency(efficiencyPeriod);
+            document.getElementById('efficiencyAnnual').textContent = `Annual: ${formatCurrency(efficiencyAnnual)}`;
+            updateItemStyle(document.getElementById('efficiencyItem'), efficiencyPeriod);
+
+            document.getElementById('qualityPeriod').textContent = formatCurrency(qualityPeriod);
+            document.getElementById('qualityAnnual').textContent = `Annual: ${formatCurrency(qualityAnnual)}`;
+            updateItemStyle(document.getElementById('qualityItem'), qualityPeriod);
+
+            document.getElementById('totalPeriod').textContent = formatCurrency(totalPeriod);
+            document.getElementById('totalAnnual').textContent = `Annual: ${formatCurrency(totalAnnual)}`;
+            updateItemStyle(document.getElementById('totalItem'), totalPeriod);
+
+            // Update breakdown
+            document.getElementById('bd-lt-change').textContent = leadTimeChange.toFixed(1);
+            document.getElementById('bd-daily-cost').textContent = formatCurrency(dailyCost);
+            document.getElementById('bd-items-month').textContent = throughputCurr.toFixed(0);
+            document.getElementById('bd-months').textContent = months;
+
+            document.getElementById('bd-cost-prev').textContent = formatCurrency(costPerItemPrev);
+            document.getElementById('bd-cost-curr').textContent = formatCurrency(costPerItemCurr);
+            document.getElementById('bd-change-item').textContent = formatCurrency(changePerItem);
+
+            document.getElementById('bd-wip-change').textContent = wipChange.toFixed(0);
+            document.getElementById('bd-wip-cost').textContent = formatCurrency(costPerItemCurr);
+
+            document.getElementById('bd-defects-change').textContent = defectsChange.toFixed(0);
+            document.getElementById('bd-defects-cost').textContent = formatCurrency(costPerItemCurr);
+        }
+
+        // Toggle breakdown
+        document.getElementById('toggleBreakdown').addEventListener('click', function() {
+            const breakdown = document.getElementById('breakdown');
+            breakdown.classList.toggle('visible');
+            this.textContent = breakdown.classList.contains('visible') ? 'Hide Breakdown' : 'Show Breakdown';
+        });
+
+        // Add event listeners to all inputs
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', calculate);
+        });
+
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
