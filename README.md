@@ -1,85 +1,117 @@
-# Continuous Improvement Impact Calculator
+# Continuous Improvement Financial Impact Calculator
 
-Quantifies the Business Value of Continuous Improvement.
+A single-file web tool that translates flow metrics into financial impact for leadership. Built for Scrum Masters and Agile Coaches who need to prove measurable business value — not just report ceremony completion.
 
-A web-based calculator that translates flow metrics improvements into executive-level financial impact. Built for Scrum Masters and Agile Coaches who need to prove measurable value.
-
-## What It Does
-
-Calculates the business impact of continuous improvement across four dimensions:
-
-- **Productivity** – Cost per item changes as throughput evolves
-- **Time-to-Market** – Value acceleration from reduced lead times
-- **Efficiency** – WIP reduction impact on flow and carrying costs
-- **Quality** – Defect reduction savings
-
-Enter your team economics, improvement period, and flow metrics. Get period and projected annual savings.
-
-## How to Use
-
-1. Open `ci-savings-calculator.html` in your browser
-2. Fill in **Team Economics** (blend rate, team size, working days)
-3. Set your **Improvement Period** (start/end dates)
-4. Enter **Flow Metrics** before and after (throughput, lead time, WIP, defects)
-5. View instant calculations in the **Summary** section
-6. Click "Show Breakdown" for formulas and detailed rationale
-
-## Features
-
-- Real-time calculation as you type
-- Currency formatting with K$ and M$ notation
-- Improvement percentage indicators
-- Formula breakdown with business rationale
-- Mobile responsive
-- No dependencies, no backend, no data collection
-
-## Example Use Case
-
-**Before improvement:**
-- Throughput: 50 items/month
-- Lead Time: 45 days
-- WIP: 25 items
-- Defects: 8/month
-
-**After improvement:**
-- Throughput: 40 items/month
-- Lead Time: 25 days
-- WIP: 25 items
-- Defects: 25/month
-
-**Result:** 22.4 M$ period savings, 53.9 M$ projected annual.
-
-## Installation
-
-No installation needed. Just download and open in any modern browser.
-
-```bash
-git clone https://github.com/pcdenant/Continuous-Improvement-Calculator.git
-cd Continuous-Improvement-Calculator
-open ci-savings-calculator.html
-```
-
-## Tech Stack
-
-- Pure HTML/CSS/JavaScript
-- No frameworks
-- No build process
-- IBM Plex Mono + Inter fonts (via Google Fonts CDN)
-
-## Contributing
-
-Found a bug or have a suggestion? [Open an issue](https://github.com/pcdenant/Continuous-Improvement-Calculator/issues).
-
-## License
-
-MIT License - use it, modify it, share it.
-
-## Author
-
-**Pierre-Cyril Denant**  
-Agile Coach | Scrum Master Mentor  
-[collaborationsolved.com](https://collaborationsolved.com)
+**→ [Live tool](https://pcdenant.github.io/Continuous-Improvement-Calculator/)** · **[Collaboration Solved](https://collaborationsolved.com)**
 
 ---
 
-Made with ❤️ and 🍁 Syrup
+## What it does
+
+Enter your team's flow metrics at the start and end of an improvement period. The calculator converts the delta into dollar (or euro) savings across four independent dimensions:
+
+| Dimension | Leadership framing |
+|---|---|
+| Productivity | Delivery Cost Reduction |
+| Time-to-Market | Revenue Acceleration |
+| Efficiency (WIP) | Carrying Cost Reduction |
+| Quality | Rework Cost Elimination |
+
+Each dimension shows the impact over the measured period and a projected annual figure.
+
+---
+
+## Why these four dimensions
+
+They are intentionally independent — not mathematically linked via Little's Law. This is a design choice, not an oversight. Linking them creates a double-counting problem (WIP × Throughput × Lead Time are interdependent). Keeping them separate makes the tool usable without requiring practitioners to resolve the dependency before presenting results.
+
+---
+
+## Inputs
+
+**Team Economics**
+- Blend Rate ($/hour or €/hour)
+- Hours per Day
+- Team Size — Start and End (a smaller, more focused team can outperform a larger one)
+- Working Days per Week / per Month
+
+**Improvement Period**
+- Start Date and End Date (defaults to today and 3 months prior)
+
+**Flow Metrics** (Start and End values for each)
+- Throughput (items/month)
+- Lead Time (days)
+- WIP (items in progress)
+- Defects (count/month)
+
+---
+
+## Features
+
+- **Auto-save** — values saved to localStorage on every input change
+- **Share link** — generates a URL with all values encoded as parameters
+- **Show Breakdown** — collapsible section with formulas, exec translation, and rationale per dimension
+- **Tooltips** — each savings tile has a `?` icon explaining what drives the number and common blockers
+- **Light / Dark mode**
+- **$ / € currency toggle**
+- **Responsive** — works on mobile and desktop
+
+---
+
+## Formulas
+
+**Productivity (Delivery Cost Reduction)**
+```
+Impact = -((Cost/Item End − Cost/Item Start) × Items/Month End × Months)
+```
+Where `Cost/Item = Monthly Team Cost / Throughput`
+
+**Time-to-Market (Revenue Acceleration)**
+```
+Impact = -((Lead Time End − Lead Time Start) × Daily Team Cost × Items/Month End × Months)
+```
+
+**Efficiency / WIP (Carrying Cost Reduction)**
+```
+Impact = -((WIP End − WIP Start) × Cost/Item End × Months)
+```
+
+**Quality (Rework Cost Elimination)**
+```
+Impact = -((Defects End − Defects Start) × Cost/Item End × Months)
+```
+
+Negative sign convention: a reduction in cost/time/WIP/defects produces a positive savings value. An increase produces a negative value (cost increase), shown in red.
+
+---
+
+## Usage notes
+
+- **Positive values** = savings (shown in yellow)
+- **Negative values** = cost increase (shown in red) — the team got worse on that dimension
+- **Projected Annual** = period impact ÷ months × 12
+- All four dimensions are independent — total impact is a sum, not a derived figure
+
+---
+
+## Single-file architecture
+
+The tool is a self-contained `.html` file with no external dependencies beyond Google Fonts. No build step, no framework, no server required. Open in any browser.
+
+---
+
+## Methodology
+
+Built on the **Value Bridge** framework by Pierre-Cyril Denant. The Value Bridge connects operational flow metrics (throughput, cycle time, lead time, WIP) to executive-level financial language — the only language that protects the Scrum Master role from budget cuts.
+
+More at [collaborationsolved.com](https://collaborationsolved.com) · [SM Survival Score](https://sm-survival-score.vercel.app/)
+
+---
+
+## Report an issue
+
+[Open an issue on GitHub](https://github.com/pcdenant/Continuous-Improvement-Calculator/issues)
+
+---
+
+*un outil de Collaboration Solved par Pierre-Cyril Denant — 2026*
