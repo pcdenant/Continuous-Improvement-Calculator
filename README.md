@@ -2,7 +2,7 @@
 
 A single-file web tool that translates flow metrics into financial impact for leadership. Built for Scrum Masters and Agile Coaches who need to prove measurable business value — not just report ceremony completion.
 
-**→ [Live tool](https://pcdenant.github.io/Continuous-Improvement-Calculator/)** · **[Collaboration Solved](https://collaborationsolved.com)**
+**→ [Live tool]([https://pcdenant.github.io/Continuous-Improvement-Calculator/](https://pcdenant.github.io/Continuous-Improvement-Calculator/index.html))** · **[Collaboration Solved](https://collaborationsolved.com)**
 
 ---
 
