@@ -11,7 +11,7 @@ A single-file web tool that translates flow metrics into financial impact for le
 Enter your team's flow metrics at the start and end of an improvement period. The calculator converts the delta into dollar (or euro) savings across four independent dimensions:
 
 | Dimension | Leadership framing |
-|---|---|
+| --- | --- |
 | Productivity | Delivery Cost Reduction |
 | Time-to-Market | Revenue Acceleration |
 | Efficiency (WIP) | Carrying Cost Reduction |
@@ -30,67 +30,81 @@ They are intentionally independent — not mathematically linked via Little's La
 ## Inputs
 
 **Team Economics**
-- Blend Rate ($/hour or €/hour)
-- Hours per Day
-- Team Size — Start and End (a smaller, more focused team can outperform a larger one)
-- Working Days per Week / per Month
+
+* Blend Rate ($/hour or €/hour)
+* Hours per Day
+* Team Size — Start and End (a smaller, more focused team can outperform a larger one)
+* Working Days per Week / per Month
 
 **Improvement Period**
-- Start Date and End Date (defaults to today and 3 months prior)
+
+* Start Date and End Date (defaults to today and 3 months prior)
 
 **Flow Metrics** (Start and End values for each)
-- Throughput (items/month)
-- Lead Time (days)
-- WIP (items in progress)
-- Defects (count/month)
+
+* Throughput (items/month)
+* Lead Time (days)
+* WIP (items in progress)
+* Defects (count/month)
 
 ---
 
 ## Features
 
-- **Auto-save** — values saved to localStorage on every input change
-- **Share link** — generates a URL with all values encoded as parameters
-- **Show Breakdown** — collapsible section with formulas, exec translation, and rationale per dimension
-- **Tooltips** — each savings tile has a `?` icon explaining what drives the number and common blockers
-- **Light / Dark mode**
-- **$ / € currency toggle**
-- **Responsive** — works on mobile and desktop
+* **Auto-save** — values saved to localStorage on every input change
+* **Share link** — generates a URL with all values encoded as parameters
+* **Show Breakdown** — collapsible section with formulas, exec translation, and rationale per dimension
+* **Tooltips** — each savings tile has a `?` icon explaining what drives the number and common blockers
+* **Light / Dark mode**
+* **$ / € currency toggle**
+* **Responsive** — works on mobile and desktop
 
 ---
 
 ## Formulas
 
 **Productivity (Delivery Cost Reduction)**
+
 ```
 Impact = -((Cost/Item End − Cost/Item Start) × Items/Month End × Months)
 ```
+
 Where `Cost/Item = Monthly Team Cost / Throughput`
 
 **Time-to-Market (Revenue Acceleration)**
+
 ```
-Impact = -((Lead Time End − Lead Time Start) × Daily Team Cost × Items/Month End × Months)
+Impact = -((Lead Time End − Lead Time Start) × Daily Team Cost × Months)
 ```
+
+Each day removed from lead time is a day of team cost recovered per delivery cycle. Throughput is deliberately excluded: the per-item daily cost and the throughput multiplier cancel mathematically, so including throughput inflates the result without adding accuracy.
 
 **Efficiency / WIP (Carrying Cost Reduction)**
+
 ```
-Impact = -((WIP End − WIP Start) × Cost/Item End × Months)
+Impact = -((WIP End − WIP Start) × Cost/Item End × 2% × Months)
 ```
 
+WIP is a stock metric, not a flow. A 2%/month carrying rate (≈ 25%/year) is applied — the standard proxy for the cost of capital tied up in unfinished work. Multiplying a stock directly by months without a rate would imply a 100%/month holding cost, which is not defensible.
+
 **Quality (Rework Cost Elimination)**
+
 ```
 Impact = -((Defects End − Defects Start) × Cost/Item End × Months)
 ```
 
-Negative sign convention: a reduction in cost/time/WIP/defects produces a positive savings value. An increase produces a negative value (cost increase), shown in red.
+Defects are a flow metric (count/month), so multiplying by months is correct: fewer defects per month, compounded over the period.
+
+**Negative sign convention**: a reduction in cost/time/WIP/defects produces a positive savings value. An increase produces a negative value (cost increase), shown in red.
 
 ---
 
 ## Usage notes
 
-- **Positive values** = savings (shown in yellow)
-- **Negative values** = cost increase (shown in red) — the team got worse on that dimension
-- **Projected Annual** = period impact ÷ months × 12
-- All four dimensions are independent — total impact is a sum, not a derived figure
+* **Positive values** = savings (shown in yellow)
+* **Negative values** = cost increase (shown in red) — the team got worse on that dimension
+* **Projected Annual** = period impact ÷ months × 12
+* All four dimensions are independent — total impact is a sum, not a derived figure
 
 ---
 
