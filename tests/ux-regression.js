@@ -343,6 +343,85 @@ function section(title) {
     else
       fail('icon buttons present on mobile', `got ${mobileIconBtns}`);
 
+    // ─────────────────────────────────────────────────────────
+    // T10 — Séparation du bouton destructif (Fix 3.1)
+    // ─────────────────────────────────────────────────────────
+    section('T10 — Clear Saved Data séparé (Fix 3.1)');
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
+
+    const clearDataMargin = await page.evaluate(() => {
+      const el = document.getElementById('clearData');
+      return el ? getComputedStyle(el).marginLeft : null;
+    });
+    if (clearDataMargin !== null && clearDataMargin !== '0px')
+      ok(`#clearData margin-left auto appliqué (computed: ${clearDataMargin})`);
+    else
+      fail('#clearData margin-left auto', `got "${clearDataMargin}"`);
+
+    // ─────────────────────────────────────────────────────────
+    // T11 — Headings sémantiques Breakdown (Fix 3.2)
+    // ─────────────────────────────────────────────────────────
+    section('T11 — Breakdown headers sont <h3> (Fix 3.2)');
+
+    await page.click('#toggleBreakdown');
+    await page.waitForSelector('.breakdown-section', { state: 'visible', timeout: 3000 }).catch(() => {});
+
+    const headerTags = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.breakdown-header')).map(el => el.tagName)
+    );
+    if (headerTags.length === 4)
+      ok(`4 éléments .breakdown-header trouvés`);
+    else
+      fail('4 éléments .breakdown-header', `got ${headerTags.length}`);
+
+    const allH3 = headerTags.every(t => t === 'H3');
+    if (allH3)
+      ok('Tous les .breakdown-header sont des <h3>');
+    else
+      fail('Tous les .breakdown-header sont des <h3>', `tags: ${headerTags.join(', ')}`);
+
+    // ─────────────────────────────────────────────────────────
+    // T12 — cursor: pointer sur les boutons (Fix 3.3 — pré-existant)
+    // ─────────────────────────────────────────────────────────
+    section('T12 — cursor: pointer sur les boutons (Fix 3.3)');
+
+    const cursors = await page.evaluate(() => {
+      const btn = document.querySelector('.btn');
+      const btnSec = document.querySelector('.btn-secondary');
+      const btnDanger = document.querySelector('.btn-danger');
+      return {
+        btn: btn ? getComputedStyle(btn).cursor : null,
+        btnSecondary: btnSec ? getComputedStyle(btnSec).cursor : null,
+        btnDanger: btnDanger ? getComputedStyle(btnDanger).cursor : null,
+      };
+    });
+
+    for (const [cls, val] of Object.entries(cursors)) {
+      if (val === 'pointer')
+        ok(`.${cls} cursor: pointer`);
+      else
+        fail(`.${cls} cursor: pointer`, `got "${val}"`);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // T13 — Landmark <main> (Fix 3.4)
+    // ─────────────────────────────────────────────────────────
+    section('T13 — Landmark <main> (Fix 3.4)');
+
+    const mainCount = await page.locator('main.container').count();
+    if (mainCount === 1)
+      ok('<main class="container"> existe (1 élément)');
+    else
+      fail('<main class="container">', `count = ${mainCount}`);
+
+    const divContainerCount = await page.locator('div.container').count();
+    if (divContainerCount === 0)
+      ok('Aucun <div class="container"> résiduel');
+    else
+      fail('Aucun <div class="container"> résiduel', `${divContainerCount} trouvé(s)`);
+
     await page.close();
 
     // ─────────────────────────────────────────────────────────

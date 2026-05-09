@@ -4,6 +4,27 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.3] — 2026-05-09
+
+### Fixed — Accessibilité (Groupe 3)
+
+* Landmark `<main>` ajouté : `<div class="container">` → `<main class="container">` — les technologies d'assistance peuvent maintenant naviguer directement au contenu principal
+* Headings sémantiques `<h3>` dans le Breakdown : les 4 `<div class="breakdown-header">` (Productivity, Time-to-Market, Efficiency, Quality) remplacés par `<h3>` — navigabilité par headings activée
+
+### Fixed — UX (Groupe 3)
+
+* Bouton "Clear Saved Data" séparé visuellement (`margin-left: auto`) — éloigné des actions principales pour éviter les clics accidentels
+
+### Note
+
+* `cursor: pointer` sur `.btn`, `.btn-secondary`, `.btn-danger` — déjà présent avant l'audit ; verrouillé par test Playwright T12
+
+### Tests
+
+* Suite Playwright étendue de 30 à 38 tests — 4 nouveaux cas T10–T13 couvrant tous les fixes du Groupe 3
+
+---
+
 ## [v2.2] — 2026-05-09
 
 ### Fixed — Accessibilité (Groupe 2)

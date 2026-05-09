@@ -733,7 +733,7 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <main class="container">
         <header>
             <div class="header-content">
                 <h1>Continuous Improvement Financial Impact Calculator</h1>
@@ -980,13 +980,13 @@
             <div class="action-buttons">
                 <button class="btn" id="toggleBreakdown">Show Breakdown</button>
                 <button class="btn-secondary" id="saveShareLink">Save/Share Link</button>
-                <button class="btn-danger" id="clearData">Clear Saved Data</button>
+                <button class="btn-danger" id="clearData" style="margin-left: auto;">Clear Saved Data</button>
             </div>
 
             <!-- Breakdown -->
             <div class="breakdown" id="breakdown">
                 <div class="breakdown-section">
-                    <div class="breakdown-header">Productivity</div>
+                    <h3 class="breakdown-header">Productivity</h3>
                     <div class="breakdown-formula">
                         <div class="breakdown-formula-title">Formula</div>
                         <div class="breakdown-formula-text">Impact = -((Cost/Item End - Cost/Item Start) × Items/Month End × Months)</div>
@@ -1019,7 +1019,7 @@
                 </div>
 
                 <div class="breakdown-section">
-                    <div class="breakdown-header">Time-to-Market</div>
+                    <h3 class="breakdown-header">Time-to-Market</h3>
                     <div class="breakdown-formula">
                         <div class="breakdown-formula-title">Formula</div>
                         <div class="breakdown-formula-text">Impact = -((Lead Time End - Lead Time Start) × Daily Cost × Months)</div>
@@ -1044,7 +1044,7 @@
                 </div>
 
                 <div class="breakdown-section">
-                    <div class="breakdown-header">Efficiency (WIP)</div>
+                    <h3 class="breakdown-header">Efficiency (WIP)</h3>
                     <div class="breakdown-formula">
                         <div class="breakdown-formula-title">Formula</div>
                         <div class="breakdown-formula-text">Impact = -((WIP End - WIP Start) × Cost/Item End × 2% × Months)</div>
@@ -1073,7 +1073,7 @@
                 </div>
 
                 <div class="breakdown-section">
-                    <div class="breakdown-header">Quality</div>
+                    <h3 class="breakdown-header">Quality</h3>
                     <div class="breakdown-formula">
                         <div class="breakdown-formula-title">Formula</div>
                         <div class="breakdown-formula-text">Impact = -((Defects End - Defects Start) × Cost/Item End × Months)</div>
@@ -1102,7 +1102,7 @@
         <footer>
             un outil de <a href="https://collaborationsolved.com" target="_blank">Collaboration Solved</a> par Pierre-Cyril Denant — 2026
         </footer>
-    </div>
+    </main>
 
     <div class="toast" id="toast"></div>
 
