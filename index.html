@@ -1139,6 +1139,25 @@
         const SVG_SUN = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>`;
         const SVG_MOON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 
+        const CARRYING_RATE_MONTHLY = 0.02; // 2%/month ≈ 25%/year — standard inventory carrying cost
+
+        const DEFAULTS = {
+            blendRate: 125,
+            hoursPerDay: 6.5,
+            teamSizeStart: 7,
+            teamSizeEnd: 7,
+            workingDaysPerWeek: 5,
+            workingDaysPerMonth: 20,
+            throughputPrev: 40,
+            throughputCurr: 52,
+            leadTimePrev: 45,
+            leadTimeCurr: 28,
+            wipPrev: 22,
+            wipCurr: 15,
+            defectsPrev: 8,
+            defectsCurr: 4,
+        };
+
         // Migration — purger les dates hardcodées de sessions précédentes
         function migrateOldDates() {
             const saved = localStorage.getItem('ci-calculator-data');
@@ -1276,23 +1295,13 @@
         function clearSavedData() {
             if (confirm('Are you sure you want to clear all saved data? This will reset all fields to default values.')) {
                 localStorage.removeItem('ci-calculator-data');
-                document.getElementById('blendRate').value = 125;
-                document.getElementById('hoursPerDay').value = 6.5;
-                document.getElementById('teamSizeStart').value = 7;
-                document.getElementById('teamSizeEnd').value = 7;
-                document.getElementById('workingDaysPerWeek').value = 5;
-                document.getElementById('workingDaysPerMonth').value = 20;
+                Object.entries(DEFAULTS).forEach(([id, val]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val;
+                });
                 document.getElementById('startDate').value = '';
                 document.getElementById('endDate').value = '';
                 setDefaultDates();
-                document.getElementById('throughputPrev').value = 40;
-                document.getElementById('throughputCurr').value = 52;
-                document.getElementById('leadTimePrev').value = 45;
-                document.getElementById('leadTimeCurr').value = 28;
-                document.getElementById('wipPrev').value = 22;
-                document.getElementById('wipCurr').value = 15;
-                document.getElementById('defectsPrev').value = 8;
-                document.getElementById('defectsCurr').value = 4;
                 calculate();
                 showToast('Data cleared and reset to defaults', 2000);
             }
@@ -1495,6 +1504,35 @@
             });
         }
 
+        function calcProductivity(costPerItemPrev, costPerItemCurr, throughputCurr, months) {
+            const changePerItem = costPerItemCurr - costPerItemPrev;
+            const period = -changePerItem * throughputCurr * months;
+            return { period, annual: (period / months) * 12 };
+        }
+
+        function calcTTM(leadTimeChange, dailyCostEnd, months) {
+            const period = -leadTimeChange * dailyCostEnd * months;
+            return { period, annual: (period / months) * 12 };
+        }
+
+        function calcEfficiency(wipChange, costPerItemCurr, months) {
+            const period = -wipChange * costPerItemCurr * CARRYING_RATE_MONTHLY * months;
+            return { period, annual: (period / months) * 12 };
+        }
+
+        function calcQuality(defectsChange, costPerItemCurr, months) {
+            const period = -defectsChange * costPerItemCurr * months;
+            return { period, annual: (period / months) * 12 };
+        }
+
+        function updateDimensionDisplay(prefix, period, annual, improvement) {
+            document.getElementById(`${prefix}Period`).textContent = formatCurrency(period);
+            document.getElementById(`${prefix}Improvement`).textContent = formatPercentage(improvement);
+            document.getElementById(`${prefix}Annual`).textContent = `Projected Annual: ${formatCurrency(annual)}`;
+            updateItemStyle(document.getElementById(`${prefix}Item`), period);
+            updateImprovementStyle(document.getElementById(`${prefix}Improvement`), improvement);
+        }
+
         // Calculate and update
         function calculate() {
             updateSummaryTitle();
@@ -1503,7 +1541,6 @@
             const hoursPerDay = parseFloat(document.getElementById('hoursPerDay').value) || 0;
             const teamSizeStart = parseFloat(document.getElementById('teamSizeStart').value) || 1;
             const teamSizeEnd = parseFloat(document.getElementById('teamSizeEnd').value) || 1;
-            const workingDaysPerWeek = parseFloat(document.getElementById('workingDaysPerWeek').value) || 5;
             const workingDaysPerMonth = parseFloat(document.getElementById('workingDaysPerMonth').value) || 20;
 
             const dailyCostStart = blendRate * hoursPerDay * teamSizeStart;
@@ -1524,63 +1561,33 @@
             const defectsPrev = parseFloat(document.getElementById('defectsPrev').value) || 0;
             const defectsCurr = parseFloat(document.getElementById('defectsCurr').value) || 0;
 
-            const leadTimeChange = leadTimeCurr - leadTimePrev;
-            const ttmPeriod = -leadTimeChange * dailyCostEnd * months;
-            const ttmAnnual = (ttmPeriod / months) * 12;
-
             const costPerItemPrev = throughputPrev > 0 ? monthlyCostStart / throughputPrev : 0;
             const costPerItemCurr = throughputCurr > 0 ? monthlyCostEnd / throughputCurr : 0;
-            const changePerItem = costPerItemCurr - costPerItemPrev;
-            const productivityPeriod = -changePerItem * throughputCurr * months;
-            const productivityAnnual = (productivityPeriod / months) * 12;
 
-            const CARRYING_RATE_MONTHLY = 0.02; // 2%/month ≈ 25%/year — standard inventory carrying cost
+            const productivity = calcProductivity(costPerItemPrev, costPerItemCurr, throughputCurr, months);
+            const ttm = calcTTM(leadTimeCurr - leadTimePrev, dailyCostEnd, months);
+            const efficiency = calcEfficiency(wipCurr - wipPrev, costPerItemCurr, months);
+            const quality = calcQuality(defectsCurr - defectsPrev, costPerItemCurr, months);
 
-            const wipChange = wipCurr - wipPrev;
-            const efficiencyPeriod = -wipChange * costPerItemCurr * CARRYING_RATE_MONTHLY * months;
-            const efficiencyAnnual = (efficiencyPeriod / months) * 12;
+            const totalPeriod = productivity.period + ttm.period + efficiency.period + quality.period;
+            const totalAnnual = productivity.annual + ttm.annual + efficiency.annual + quality.annual;
 
-            const defectsChange = defectsCurr - defectsPrev;
-            const qualityPeriod = -defectsChange * costPerItemCurr * months;
-            const qualityAnnual = (qualityPeriod / months) * 12;
+            const productivityImprovement = throughputPrev > 0 ? (throughputCurr - throughputPrev) / throughputPrev * 100 : 0;
+            const ttmImprovement = leadTimePrev > 0 ? (leadTimePrev - leadTimeCurr) / leadTimePrev * 100 : 0;
+            const wipImprovement = wipPrev > 0 ? (wipPrev - wipCurr) / wipPrev * 100 : 0;
+            const qualityImprovement = defectsPrev > 0 ? (defectsPrev - defectsCurr) / defectsPrev * 100 : 0;
 
-            const totalPeriod = ttmPeriod + productivityPeriod + efficiencyPeriod + qualityPeriod;
-            const totalAnnual = ttmAnnual + productivityAnnual + efficiencyAnnual + qualityAnnual;
-
-            const productivityImprovement = throughputPrev > 0 ? ((throughputCurr - throughputPrev) / throughputPrev * 100) : 0;
-            const ttmImprovement = leadTimePrev > 0 ? ((leadTimePrev - leadTimeCurr) / leadTimePrev * 100) : 0;
-            const wipImprovement = wipPrev > 0 ? ((wipPrev - wipCurr) / wipPrev * 100) : 0;
-            const qualityImprovement = defectsPrev > 0 ? ((defectsPrev - defectsCurr) / defectsPrev * 100) : 0;
-
-            document.getElementById('productivityPeriod').textContent = formatCurrency(productivityPeriod);
-            document.getElementById('productivityImprovement').textContent = formatPercentage(productivityImprovement);
-            document.getElementById('productivityAnnual').textContent = `Projected Annual: ${formatCurrency(productivityAnnual)}`;
-            updateItemStyle(document.getElementById('productivityItem'), productivityPeriod);
-            updateImprovementStyle(document.getElementById('productivityImprovement'), productivityImprovement);
-
-            document.getElementById('timeToMarketPeriod').textContent = formatCurrency(ttmPeriod);
-            document.getElementById('timeToMarketImprovement').textContent = formatPercentage(-ttmImprovement);
-            document.getElementById('timeToMarketAnnual').textContent = `Projected Annual: ${formatCurrency(ttmAnnual)}`;
-            updateItemStyle(document.getElementById('timeToMarketItem'), ttmPeriod);
-            updateImprovementStyle(document.getElementById('timeToMarketImprovement'), ttmImprovement);
-
-            document.getElementById('efficiencyPeriod').textContent = formatCurrency(efficiencyPeriod);
-            document.getElementById('efficiencyImprovement').textContent = formatPercentage(-wipImprovement);
-            document.getElementById('efficiencyAnnual').textContent = `Projected Annual: ${formatCurrency(efficiencyAnnual)}`;
-            updateItemStyle(document.getElementById('efficiencyItem'), efficiencyPeriod);
-            updateImprovementStyle(document.getElementById('efficiencyImprovement'), wipImprovement);
-
-            document.getElementById('qualityPeriod').textContent = formatCurrency(qualityPeriod);
-            document.getElementById('qualityImprovement').textContent = formatPercentage(-qualityImprovement);
-            document.getElementById('qualityAnnual').textContent = `Projected Annual: ${formatCurrency(qualityAnnual)}`;
-            updateItemStyle(document.getElementById('qualityItem'), qualityPeriod);
-            updateImprovementStyle(document.getElementById('qualityImprovement'), qualityImprovement);
+            updateDimensionDisplay('productivity', productivity.period, productivity.annual, productivityImprovement);
+            updateDimensionDisplay('timeToMarket', ttm.period, ttm.annual, ttmImprovement);
+            updateDimensionDisplay('efficiency', efficiency.period, efficiency.annual, wipImprovement);
+            updateDimensionDisplay('quality', quality.period, quality.annual, qualityImprovement);
 
             document.getElementById('totalPeriod').textContent = formatCurrency(totalPeriod);
             document.getElementById('totalAnnual').textContent = `Projected Annual: ${formatCurrency(totalAnnual)}`;
             updateItemStyle(document.getElementById('totalItem'), totalPeriod);
 
-            document.getElementById('bd-lt-change').textContent = leadTimeChange.toFixed(0);
+            const changePerItem = costPerItemCurr - costPerItemPrev;
+            document.getElementById('bd-lt-change').textContent = (leadTimeCurr - leadTimePrev).toFixed(0);
             document.getElementById('bd-daily-cost').textContent = formatCurrency(dailyCostEnd);
             document.getElementById('bd-months').textContent = months;
 
@@ -1590,12 +1597,12 @@
             document.getElementById('bd-items-month-prod').textContent = throughputCurr.toFixed(0);
             document.getElementById('bd-months-prod').textContent = months;
 
-            document.getElementById('bd-wip-change').textContent = wipChange.toFixed(0);
+            document.getElementById('bd-wip-change').textContent = (wipCurr - wipPrev).toFixed(0);
             document.getElementById('bd-wip-cost').textContent = formatCurrency(costPerItemCurr);
             document.getElementById('bd-carrying-rate').textContent = (CARRYING_RATE_MONTHLY * 100).toFixed(0) + '%';
             document.getElementById('bd-months-wip').textContent = months;
 
-            document.getElementById('bd-defects-change').textContent = defectsChange.toFixed(0);
+            document.getElementById('bd-defects-change').textContent = (defectsCurr - defectsPrev).toFixed(0);
             document.getElementById('bd-defects-cost').textContent = formatCurrency(costPerItemCurr);
             document.getElementById('bd-months-quality').textContent = months;
         }

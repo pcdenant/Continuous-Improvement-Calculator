@@ -4,6 +4,27 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.5] — 2026-05-09
+
+### Refactoring — Architecture JS
+
+* **Constante `CARRYING_RATE_MONTHLY`** : déplacée au niveau module (était inlinée dans `calculate()`)
+* **Objet `DEFAULTS` centralisé** : valeurs par défaut unifiées — `clearSavedData()` utilise désormais une source unique plutôt que 12 assignations hardcodées dispersées
+* **`calculate()` décomposée** : 4 fonctions pures extraites — `calcProductivity`, `calcTTM`, `calcEfficiency`, `calcQuality` — chacune retourne `{ period, annual }` ; fonction principale réduite de 103 à 63 lignes
+* **`updateDimensionDisplay()`** : helper extrait supprimant le pattern DOM dupliqué × 4 (20 lignes de répétition éliminées)
+* **Convention de signe unifiée** : les 4 dimensions affichent désormais `▲ +X%` quand la métrique s'améliore — correction d'une incohérence où TTM/WIP/Qualité affichaient `▼` en texte mais coloraient en vert
+
+### Tests
+
+* **Suite Playwright complète** — 58 assertions couvrant : calculs des 4 dimensions (valeurs numériques exactes), signes des pourcentages d'amélioration, toggle devise, toggle thème, clear data, breakdown panel, share link, régression sur zéros, snapshot de référence
+
+### Note
+
+* Zéro changement de comportement observable — calculs, affichage, persistance et partage identiques
+* Snapshot de régression (blendRate=100, h/d=8, équipe=5, mois=3) : productivity=72.0 K$, ttm=60.0 K$, efficiency=295$, quality=14.8 K$, total=147.1 K$
+
+---
+
 ## [v2.4] — 2026-05-09
 
 ### Added — UX (Groupe 4)
