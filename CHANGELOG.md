@@ -4,6 +4,21 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.4] — 2026-05-09
+
+### Added — UX (Groupe 4)
+
+* **Helper text Blend Rate** : `<small class="input-hint">` ajouté sous le champ — "Fully-loaded hourly cost — salary, benefits & overhead". Accessible, aucun JS requis.
+* **SVG inline ☀️/🌙** : Emojis remplacés par des SVGs `currentColor` dans le bouton de thème. Rendu cohérent cross-OS/navigateur, s'adapte à la couleur du thème. Constantes `SVG_SUN`/`SVG_MOON` utilisées dans `toggleTheme()` et `loadTheme()`.
+* **Avertissement période < 1 mois** : `#periodWarning` affiché si startDate et endDate sont dans le même mois. Fonction `checkPeriodWarning()` indépendante, appelée sur chaque input et au chargement.
+* **Validation visuelle inputs critiques à 0** : `blendRate` et `hoursPerDay` à 0 reçoivent la classe `input-zero` (border + glow jaune). Fonction `validateZeroInputs()` indépendante. Les métriques de flux à 0 ne sont pas affectées (valeur valide).
+
+### Tests
+
+* Suite Playwright étendue de 38 à 46 tests — 4 nouveaux cas T14–T17 couvrant tous les fixes du Groupe 4
+
+---
+
 ## [v2.3] — 2026-05-09
 
 ### Fixed — Accessibilité (Groupe 3)

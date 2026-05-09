@@ -422,6 +422,108 @@ function section(title) {
     else
       fail('Aucun <div class="container"> résiduel', `${divContainerCount} trouvé(s)`);
 
+    // ─────────────────────────────────────────────────────────
+    // T14 — Helper text Blend Rate (Fix 4.1)
+    // ─────────────────────────────────────────────────────────
+    section('T14 — Helper text Blend Rate (Fix 4.1)');
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
+
+    const hintText = await page.evaluate(() => {
+      const el = document.querySelector('.input-hint');
+      return el ? el.textContent.toLowerCase() : null;
+    });
+    if (hintText && hintText.includes('fully-loaded'))
+      ok(`.input-hint présent avec texte explicatif`);
+    else
+      fail('.input-hint Blend Rate', `got "${hintText}"`);
+
+    // ─────────────────────────────────────────────────────────
+    // T15 — SVG thème (Fix 4.2)
+    // ─────────────────────────────────────────────────────────
+    section('T15 — SVG thème (Fix 4.2)');
+
+    const hasSunSvg = await page.locator('#themeToggleBtn svg').count();
+    if (hasSunSvg > 0)
+      ok('#themeToggleBtn contient un SVG');
+    else
+      fail('#themeToggleBtn contient un SVG', 'SVG non trouvé');
+
+    const hasEmoji = await page.evaluate(() => {
+      const btn = document.getElementById('themeToggleBtn');
+      return btn ? btn.textContent.includes('☀️') || btn.textContent.includes('🌙') : false;
+    });
+    if (!hasEmoji)
+      ok('Pas d\'emoji ☀️/🌙 dans le bouton thème');
+    else
+      fail('Pas d\'emoji dans le bouton thème', 'emoji encore présent');
+
+    await page.click('#themeToggleBtn');
+    const hasMoonSvg = await page.locator('#themeToggleBtn svg').count();
+    if (hasMoonSvg > 0)
+      ok('SVG présent après toggle (mode sombre)');
+    else
+      fail('SVG présent après toggle', 'SVG non trouvé en mode sombre');
+    await page.click('#themeToggleBtn');
+
+    // ─────────────────────────────────────────────────────────
+    // T16 — Avertissement période < 1 mois (Fix 4.3)
+    // ─────────────────────────────────────────────────────────
+    section('T16 — Avertissement période < 1 mois (Fix 4.3)');
+
+    const today = new Date().toISOString().split('T')[0];
+    await page.fill('#startDate', today);
+    await page.fill('#endDate', today);
+    await page.dispatchEvent('#endDate', 'input');
+
+    const warningVisible = await page.evaluate(() => {
+      const el = document.getElementById('periodWarning');
+      return el ? el.style.display !== 'none' && el.style.display !== '' : false;
+    });
+    if (warningVisible)
+      ok('#periodWarning visible quand start = end');
+    else
+      fail('#periodWarning visible quand start = end', 'non visible ou absent');
+
+    await page.fill('#startDate', '2026-02-01');
+    await page.fill('#endDate', '2026-05-09');
+    await page.dispatchEvent('#endDate', 'input');
+
+    const warningHidden = await page.evaluate(() => {
+      const el = document.getElementById('periodWarning');
+      return el ? el.style.display === 'none' : true;
+    });
+    if (warningHidden)
+      ok('#periodWarning caché quand période > 1 mois');
+    else
+      fail('#periodWarning caché quand période > 1 mois', 'toujours visible');
+
+    // ─────────────────────────────────────────────────────────
+    // T17 — Validation visuelle input à 0 (Fix 4.4)
+    // ─────────────────────────────────────────────────────────
+    section('T17 — Validation visuelle input à 0 (Fix 4.4)');
+
+    await page.fill('#blendRate', '0');
+    await page.dispatchEvent('#blendRate', 'input');
+    const hasZeroClass = await page.evaluate(() =>
+      document.getElementById('blendRate')?.classList.contains('input-zero')
+    );
+    if (hasZeroClass)
+      ok('#blendRate a la classe input-zero quand valeur = 0');
+    else
+      fail('#blendRate input-zero', 'classe absente avec valeur 0');
+
+    await page.fill('#blendRate', '125');
+    await page.dispatchEvent('#blendRate', 'input');
+    const noZeroClass = await page.evaluate(() =>
+      document.getElementById('blendRate')?.classList.contains('input-zero')
+    );
+    if (!noZeroClass)
+      ok('#blendRate perd input-zero avec valeur > 0');
+    else
+      fail('#blendRate perd input-zero', 'classe encore présente avec valeur 125');
+
     await page.close();
 
     // ─────────────────────────────────────────────────────────
