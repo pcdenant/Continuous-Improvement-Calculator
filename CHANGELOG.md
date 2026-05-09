@@ -4,6 +4,19 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.2] — 2026-05-09
+
+### Fixed — Accessibilité (Groupe 2)
+
+* `prefers-reduced-motion` media query ajoutée — désactive toutes les animations et transitions (`0.01ms`) si l'utilisateur a activé "Reduce Motion" dans son OS. Couvre `pulse-ring`, `fadeIn`, et les 10+ `transition` du CSS.
+* `.icon-btn` : `min-width` et `height` portés de 40px à 44px — conforme Apple HIG et WCAG 2.5.5 (touch target minimum)
+
+### Fixed — UX (Groupe 2)
+
+* Label WIP corrigé : "WIP (items/month)" → "WIP (items in progress)" — le WIP est un stock, pas un débit mensuel. Cohérent avec le Breakdown.
+
+---
+
 ## [v2.1] — 2026-05-09
 
 ### Fixed — Accessibilité (Groupe 1)

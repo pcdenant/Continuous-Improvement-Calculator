@@ -97,8 +97,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 40px;
-            height: 40px;
+            min-width: 44px;
+            height: 44px;
             padding: 0 0.625rem;
             background: var(--surface);
             border: 1px solid var(--border);
@@ -720,6 +720,16 @@
                 width: 100%;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -839,7 +849,7 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>WIP (items/month)</label>
+                    <label>WIP (items in progress)</label>
                     <div class="metrics-grid">
                         <div>
                             <label for="wipPrev" style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
