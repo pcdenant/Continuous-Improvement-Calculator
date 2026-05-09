@@ -364,7 +364,7 @@
         }
 
         .tooltip-blockers-title {
-            font-size: 0.6875rem;
+            font-size: 0.75rem;
             color: var(--danger);
             font-weight: 600;
             margin-bottom: 0.4rem;
@@ -404,7 +404,7 @@
         }
 
         .summary-improvement.negative {
-            color: #FF9500;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .summary-period {
@@ -551,7 +551,7 @@
         }
 
         .breakdown-formula-title {
-            font-size: 0.6875rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: rgba(255, 255, 255, 0.6);
@@ -757,14 +757,14 @@
                     <label>Team Size</label>
                     <div class="metrics-grid">
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
+                            <label for="teamSizeStart" style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
                             <div class="input-wrapper">
                                 <input type="number" id="teamSizeStart" value="7" step="1" min="1">
                                 <span class="unit">people</span>
                             </div>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
+                            <label for="teamSizeEnd" style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
                             <div class="input-wrapper">
                                 <input type="number" id="teamSizeEnd" value="7" step="1" min="1">
                                 <span class="unit">people</span>
@@ -808,13 +808,13 @@
                     <label>Throughput (items/month)</label>
                     <div class="metrics-grid">
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
+                            <label for="throughputPrev" style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
                             <div class="input-wrapper">
                                 <input type="number" id="throughputPrev" value="50" step="1" min="0">
                             </div>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
+                            <label for="throughputCurr" style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
                             <div class="input-wrapper">
                                 <input type="number" id="throughputCurr" value="40" step="1" min="0">
                             </div>
@@ -825,13 +825,13 @@
                     <label>Lead/Cycle Time (days)</label>
                     <div class="metrics-grid">
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
+                            <label for="leadTimePrev" style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
                             <div class="input-wrapper">
                                 <input type="number" id="leadTimePrev" value="45" step="1" min="0">
                             </div>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
+                            <label for="leadTimeCurr" style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
                             <div class="input-wrapper">
                                 <input type="number" id="leadTimeCurr" value="25" step="1" min="0">
                             </div>
@@ -842,13 +842,13 @@
                     <label>WIP (items/month)</label>
                     <div class="metrics-grid">
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
+                            <label for="wipPrev" style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
                             <div class="input-wrapper">
                                 <input type="number" id="wipPrev" value="25" step="1" min="0">
                             </div>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
+                            <label for="wipCurr" style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
                             <div class="input-wrapper">
                                 <input type="number" id="wipCurr" value="25" step="1" min="0">
                             </div>
@@ -859,13 +859,13 @@
                     <label>Defects (count/month)</label>
                     <div class="metrics-grid">
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
+                            <label for="defectsPrev" style="font-size: 0.75rem; margin-bottom: 0.3rem;">Start</label>
                             <div class="input-wrapper">
                                 <input type="number" id="defectsPrev" value="8" step="1" min="0">
                             </div>
                         </div>
                         <div>
-                            <label style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
+                            <label for="defectsCurr" style="font-size: 0.75rem; margin-bottom: 0.3rem;">End</label>
                             <div class="input-wrapper">
                                 <input type="number" id="defectsCurr" value="25" step="1" min="0">
                             </div>
@@ -1099,6 +1099,7 @@
     <script>
         // Global settings
         let currencySymbol = '$';
+        let saveTimer;
 
         // Migration — purger les dates hardcodées de sessions précédentes
         function migrateOldDates() {
@@ -1358,7 +1359,8 @@
 
         // Format date for display
         function formatDate(dateString) {
-            const date = new Date(dateString);
+            const [year, month, day] = dateString.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             return date.toLocaleDateString('en-US', options);
         }
@@ -1428,10 +1430,18 @@
             }
         }
 
+        function debouncedSave() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                const values = getAllValues();
+                localStorage.setItem('ci-calculator-data', JSON.stringify(values));
+                showToast('Auto-saved ✓');
+            }, 800);
+        }
+
         // Calculate and update
         function calculate() {
             updateSummaryTitle();
-            saveToLocalStorage();
 
             const blendRate = parseFloat(document.getElementById('blendRate').value) || 0;
             const hoursPerDay = parseFloat(document.getElementById('hoursPerDay').value) || 0;
@@ -1554,7 +1564,10 @@
         // Add event listeners to all inputs
         const inputs = document.querySelectorAll('input');
         inputs.forEach(input => {
-            input.addEventListener('input', calculate);
+            input.addEventListener('input', () => {
+                calculate();
+                debouncedSave();
+            });
         });
 
         // Initialize
