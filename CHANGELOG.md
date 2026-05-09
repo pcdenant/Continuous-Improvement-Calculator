@@ -4,6 +4,21 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.1] — 2026-05-09
+
+### Fixed — Accessibilité (Groupe 1)
+
+* Labels `for` ajoutés sur les 10 sub-inputs Start/End (teamSizeStart/End, throughputPrev/Curr, leadTimePrev/Curr, wipPrev/Curr, defectsPrev/Curr) — screen reader compliance et click-to-focus
+* Taille de texte minimum portée à 12px (0.75rem) sur `.breakdown-formula-title` et `.tooltip-blockers-title` (étaient à 11px / 0.6875rem)
+* Contraste couleur dégradation `.summary-improvement.negative` : `#FF9500` → `rgba(255,255,255,0.9)` — ratio WCAG AA ≥ 4.5:1 sur fond vert `#006946` (ratio précédent ~3:1)
+
+### Fixed — UX (Groupe 1)
+
+* Debounce du save à 800ms — `saveToLocalStorage()` retiré de `calculate()`, remplacé par `debouncedSave()` sur les events `input`. Plus de toast spammé à chaque keystroke ; un seul toast après 800ms d'inactivité
+* Bug timezone sur `formatDate()` — les dates ISO ("2026-05-09") étaient parsées en UTC et affichées J-1 dans les fuseaux UTC-4/5. Correction : parse en heure locale via `new Date(year, month-1, day)`
+
+---
+
 ## [v2.0] — 2026-04-22
 
 ### Fixed — Formula corrections (credibility)
