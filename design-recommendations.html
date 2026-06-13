@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recommandations Design — CI Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0ede8;
+      color: #111;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+    }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+
+    /* PAGE HEADER */
+    .page-header { background: #111; color: white; padding: 3rem 0 2.5rem; }
+
+    .taste-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: #FFF200; color: #000;
+      font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 0.3rem 0.75rem;
+      border-radius: 100px; margin-bottom: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .page-header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-header p { color: rgba(255,255,255,0.55); font-size: 1rem; margin-bottom: 1.5rem; }
+
+    .back-link {
+      color: rgba(255,255,255,0.45); text-decoration: none;
+      font-size: 0.875rem; transition: color 0.2s;
+    }
+    .back-link:hover { color: #FFF200; }
+
+    /* AUDIT */
+    .audit-section { padding: 3rem 0; border-bottom: 1px solid rgba(0,0,0,0.07); }
+
+    .section-label {
+      font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: #888; font-family: 'JetBrains Mono', monospace; margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700;
+      letter-spacing: -0.02em; margin-bottom: 1.5rem;
+    }
+
+    .audit-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;
+    }
+
+    .audit-item {
+      background: white; border-radius: 14px; padding: 1.25rem 1.5rem;
+      border-left: 3px solid transparent;
+    }
+    .audit-item.critical { border-left-color: #dc2626; }
+    .audit-item.medium   { border-left-color: #f59e0b; }
+    .audit-item.low      { border-left-color: #3b82f6; }
+
+    .audit-category {
+      font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: #aaa; font-family: 'JetBrains Mono', monospace; margin-bottom: 0.35rem;
+    }
+    .audit-item-title { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.375rem; }
+    .audit-desc { font-size: 0.8125rem; color: #666; line-height: 1.5; }
+
+    /* COMPARISON */
+    .comparison-section { padding: 3rem 0; }
+
+    .option-tabs {
+      display: flex; gap: 0.375rem; margin-bottom: 1.75rem;
+      background: white; border-radius: 16px; padding: 0.375rem; width: fit-content;
+    }
+
+    .option-tab {
+      padding: 0.625rem 1.25rem; border-radius: 12px; border: none; background: none;
+      cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.875rem;
+      font-weight: 500; color: #666; transition: all 0.2s;
+    }
+    .option-tab.active { background: #111; color: white; }
+    .option-tab:hover:not(.active) { background: #f0f0f0; color: #111; }
+
+    .comparison-panels {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;
+    }
+
+    .panel { background: white; border-radius: 20px; overflow: hidden; }
+
+    .panel-header {
+      padding: 1rem 1.5rem; display: flex; align-items: center;
+      justify-content: space-between; border-bottom: 1px solid #f0f0f0;
+    }
+
+    .panel-label {
+      font-size: 0.6875rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #aaa; font-family: 'JetBrains Mono', monospace;
+    }
+    .panel-name { font-size: 0.875rem; font-weight: 600; color: #111; }
+    .panel-body { padding: 1.5rem; }
+
+    /* OPTION CONTENT SWITCHING */
+    .option-content { display: none; }
+    .option-content.active { display: block; }
+
+    /* CHANGES SECTION */
+    .changes-section {
+      margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f0f0f0;
+    }
+
+    .changes-label {
+      font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: #aaa; font-family: 'JetBrains Mono', monospace; margin-bottom: 0.5rem;
+    }
+
+    .changes-title {
+      font-family: 'Outfit', sans-serif; font-size: 1.125rem;
+      font-weight: 700; margin-bottom: 1rem; letter-spacing: -0.02em;
+    }
+
+    .changes-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.625rem;
+    }
+
+    .change-item {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 0.875rem; background: #f8f8f8; border-radius: 12px;
+    }
+
+    .change-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; flex-shrink: 0;
+    }
+
+    .change-text-title { font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .change-text-desc { font-size: 0.75rem; color: #666; line-height: 1.4; }
+
+    /* OVERVIEW */
+    .overview-section { padding: 3rem 0; background: white; border-top: 1px solid rgba(0,0,0,0.06); }
+
+    .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+    .overview-card { border-radius: 20px; padding: 1.75rem; border: 1px solid #e8e8e8; }
+
+    .option-badge {
+      display: inline-block; font-size: 0.625rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 0.25rem 0.625rem; border-radius: 100px; margin-bottom: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .overview-card h3 {
+      font-family: 'Outfit', sans-serif; font-size: 1.25rem;
+      font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.375rem;
+    }
+
+    .tagline { font-size: 0.875rem; color: #666; margin-bottom: 1.25rem; }
+
+    .design-tokens {
+      padding: 1rem; background: #f8f8f8; border-radius: 10px; margin-bottom: 1.25rem;
+    }
+
+    .token-row {
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+      font-size: 0.8125rem;
+    }
+    .token-row:last-child { margin-bottom: 0; }
+
+    .token-label {
+      color: #aaa; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.625rem; min-width: 52px;
+    }
+
+    .token-value { color: #111; font-weight: 500; font-size: 0.8125rem; }
+
+    .token-swatch {
+      width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .changes-list { list-style: none; }
+    .changes-list li {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      padding: 0.45rem 0; border-bottom: 1px solid #f0f0f0;
+      font-size: 0.8125rem; color: #444;
+    }
+    .changes-list li:last-child { border-bottom: none; }
+    .changes-list li::before { content: '→'; color: #ccc; flex-shrink: 0; font-size: 0.75rem; margin-top: 0.1rem; }
+
+    .dials {
+      display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;
+    }
+    .dial {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0.25rem; background: #f8f8f8; border-radius: 10px; padding: 0.625rem 0.875rem;
+      flex: 1;
+    }
+    .dial-name { font-size: 0.5625rem; text-transform: uppercase; letter-spacing: 0.08em; color: #999; font-family: 'JetBrains Mono', monospace; text-align: center; }
+    .dial-value { font-size: 1.125rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #111; }
+    .dial-bar { width: 100%; height: 3px; background: #e8e8e8; border-radius: 100px; overflow: hidden; margin-top: 0.125rem; }
+    .dial-fill { height: 100%; border-radius: 100px; background: #006946; }
+
+    /* FOOTER */
+    .page-footer { padding: 2rem 0; border-top: 1px solid rgba(0,0,0,0.06); text-align: center; }
+    .page-footer p { font-size: 0.8125rem; color: #888; }
+
+    /* =====================
+       MOCKUP STYLES
+       ===================== */
+
+    .mockup { border-radius: 14px; overflow: hidden; }
+
+    /* --- BEFORE (current production) --- */
+    .mockup-before {
+      background: #FBF3EB; padding: 1.25rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .mockup-before .m-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 1.25rem;
+    }
+    .mockup-before .m-title { font-size: 1.125rem; font-weight: 700; color: #006946; letter-spacing: -0.02em; }
+    .mockup-before .m-subtitle { font-size: 0.6875rem; color: #4a4a4a; margin-top: 0.2rem; }
+    .mockup-before .m-controls { display: flex; gap: 0.375rem; }
+    .mockup-before .m-btn {
+      width: 34px; height: 34px; background: white; border: 1px solid #e5e5e5;
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 0.8125rem; color: #4a4a4a;
+    }
+    .mockup-before .m-card {
+      background: white; border: 1px solid #e5e5e5; border-radius: 14px;
+      padding: 1.125rem; margin-bottom: 0.875rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .mockup-before .m-section-title {
+      font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: #006946; margin-bottom: 0.875rem; font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .mockup-before .m-row { margin-bottom: 0.625rem; }
+    .mockup-before .m-label { font-size: 0.75rem; color: #4a4a4a; margin-bottom: 0.25rem; font-weight: 500; display: block; }
+    .mockup-before .m-input {
+      width: 100%; background: #FBF3EB; border: 1px solid #e5e5e5; border-radius: 9px;
+      padding: 0.5rem 0.75rem; font-size: 0.8125rem; font-family: 'JetBrains Mono', monospace;
+      color: #1a1a1a;
+    }
+    .mockup-before .m-results {
+      background: linear-gradient(135deg, #006946 0%, #008857 100%);
+      border-radius: 14px; padding: 1.125rem; color: white;
+    }
+    .mockup-before .m-results-title {
+      font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: #FFF200; margin-bottom: 0.875rem; font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .mockup-before .m-results-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.875rem;
+    }
+    .mockup-before .m-result-item {
+      background: rgba(255,255,255,0.1); border-radius: 9px; padding: 0.75rem;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .mockup-before .m-result-label { font-size: 0.5625rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.65); margin-bottom: 0.25rem; }
+    .mockup-before .m-result-value { font-size: 1.125rem; font-weight: 700; color: white; font-family: 'JetBrains Mono', monospace; }
+    .mockup-before .m-result-delta { font-size: 0.5625rem; color: #FFF200; }
+    .mockup-before .m-total {
+      border-top: 1px solid rgba(255,255,255,0.2); padding-top: 0.75rem;
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .mockup-before .m-total-label { font-size: 0.8125rem; color: rgba(255,255,255,0.75); }
+    .mockup-before .m-total-value { font-size: 1.625rem; font-weight: 700; color: white; font-family: 'JetBrains Mono', monospace; }
+
+    /* --- OPTION A: Analyst Pro --- */
+    .mockup-a {
+      background: #F9F8F6; padding: 1.25rem;
+      font-family: 'Outfit', sans-serif;
+    }
+    .mockup-a .m-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+    .mockup-a .m-eyebrow { font-size: 0.5625rem; text-transform: uppercase; letter-spacing: 0.15em; color: #999; font-family: 'JetBrains Mono', monospace; margin-bottom: 0.2rem; }
+    .mockup-a .m-title { font-size: 1.25rem; font-weight: 800; color: #0a0a0a; letter-spacing: -0.03em; line-height: 1.1; }
+    .mockup-a .m-controls { display: flex; gap: 0.375rem; }
+    .mockup-a .m-btn { width: 30px; height: 30px; background: none; border: 1px solid #ddd; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.8125rem; color: #888; }
+    .mockup-a .m-card {
+      background: white; border: 1px solid #ebebeb;
+      border-left: 3px solid #006946; border-radius: 10px; padding: 1.125rem; margin-bottom: 0.875rem;
+    }
+    .mockup-a .m-section-title { font-size: 0.6875rem; font-weight: 700; color: #222; margin-bottom: 0.875rem; letter-spacing: 0; text-transform: none; }
+    .mockup-a .m-row { margin-bottom: 0.75rem; }
+    .mockup-a .m-label { font-size: 0.625rem; color: #aaa; margin-bottom: 0.25rem; font-weight: 700; display: block; text-transform: uppercase; letter-spacing: 0.06em; font-family: 'JetBrains Mono', monospace; }
+    .mockup-a .m-input {
+      width: 100%; background: none; border: none; border-bottom: 1.5px solid #e0e0e0;
+      padding: 0.45rem 0; font-size: 0.9375rem; font-family: 'JetBrains Mono', monospace;
+      color: #111; font-weight: 500;
+    }
+    .mockup-a .m-results {
+      background: white; border-radius: 10px; padding: 1.125rem;
+      border: 1px solid #ebebeb; border-left: 4px solid #006946;
+    }
+    .mockup-a .m-results-title { font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; margin-bottom: 0.875rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .mockup-a .m-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.875rem; }
+    .mockup-a .m-result-item { padding: 0.625rem 0; border-bottom: 1px solid #f0f0f0; }
+    .mockup-a .m-result-label { font-size: 0.5625rem; text-transform: uppercase; letter-spacing: 0.06em; color: #bbb; margin-bottom: 0.2rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .mockup-a .m-result-value { font-size: 1.25rem; font-weight: 800; color: #006946; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.02em; }
+    .mockup-a .m-result-delta { font-size: 0.5625rem; color: #aaa; }
+    .mockup-a .m-total { padding-top: 0.875rem; display: flex; justify-content: space-between; align-items: baseline; border-top: 2px solid #111; }
+    .mockup-a .m-total-label { font-size: 0.8125rem; color: #666; font-weight: 600; }
+    .mockup-a .m-total-value { font-size: 1.875rem; font-weight: 800; color: #111; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.03em; }
+
+    /* --- OPTION B: Command Center --- */
+    .mockup-b {
+      background: #080808; padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      border-radius: 14px;
+    }
+    .mockup-b .m-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.125rem; padding-bottom: 0.75rem; border-bottom: 1px solid #1a1a1a;
+    }
+    .mockup-b .m-title { font-size: 0.6875rem; font-weight: 600; color: #00c47d; letter-spacing: 0.08em; text-transform: uppercase; }
+    .mockup-b .m-controls { display: flex; gap: 0.375rem; }
+    .mockup-b .m-btn { width: 26px; height: 26px; background: #111; border: 1px solid #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.6875rem; color: #00c47d; }
+    .mockup-b .m-card {
+      background: #0f0f0f; border: 1px solid #1a1a1a;
+      border-left: 2px solid #00c47d; border-radius: 5px; padding: 1rem; margin-bottom: 0.625rem;
+    }
+    .mockup-b .m-section-title { font-size: 0.5625rem; text-transform: uppercase; letter-spacing: 0.15em; color: #00c47d; margin-bottom: 0.75rem; font-weight: 600; }
+    .mockup-b .m-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .mockup-b .m-label { font-size: 0.5625rem; color: #444; font-weight: 500; min-width: 90px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .mockup-b .m-input {
+      flex: 1; background: #080808; border: 1px solid #222; padding: 0.4rem 0.625rem;
+      font-size: 0.8125rem; font-family: 'JetBrains Mono', monospace;
+      color: #ccc; border-radius: 3px;
+    }
+    .mockup-b .m-results { background: #0a0a0a; border-radius: 5px; padding: 1rem; border: 1px solid #1a1a1a; }
+    .mockup-b .m-results-title { font-size: 0.5625rem; text-transform: uppercase; letter-spacing: 0.15em; color: #333; margin-bottom: 0.75rem; font-weight: 600; }
+    .mockup-b .m-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.375rem; margin-bottom: 0.75rem; }
+    .mockup-b .m-result-item { padding: 0.625rem; background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 4px; }
+    .mockup-b .m-result-label { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: #333; margin-bottom: 0.2rem; }
+    .mockup-b .m-result-value { font-size: 1rem; font-weight: 600; color: #00c47d; }
+    .mockup-b .m-result-delta { font-size: 0.5rem; color: #007a4a; }
+    .mockup-b .m-total { border-top: 1px solid #1a1a1a; padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+    .mockup-b .m-total-label { font-size: 0.5625rem; color: #333; text-transform: uppercase; letter-spacing: 0.1em; }
+    .mockup-b .m-total-value { font-size: 1.625rem; font-weight: 600; color: #FFF200; letter-spacing: -0.02em; }
+
+    /* --- OPTION C: Glass Premium --- */
+    .mockup-c {
+      background: linear-gradient(135deg, #dff0ea 0%, #dce9f8 50%, #ece0f5 100%);
+      padding: 1.25rem; font-family: 'Inter', sans-serif;
+      position: relative; border-radius: 14px; overflow: hidden;
+    }
+    .mockup-c::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 30% 10%, rgba(0,169,107,0.1) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .mockup-c .m-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; position: relative; }
+    .mockup-c .m-nav-pill {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 100px; padding: 0.4rem 0.875rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .mockup-c .m-title { font-size: 0.75rem; font-weight: 700; color: #006946; }
+    .mockup-c .m-controls { display: flex; gap: 0.375rem; }
+    .mockup-c .m-btn {
+      width: 30px; height: 30px; background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(255,255,255,0.5); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; color: #006946;
+    }
+    .mockup-c .m-card {
+      background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.65);
+      border-radius: 18px; padding: 1.125rem; margin-bottom: 0.75rem;
+      box-shadow: 0 4px 20px rgba(0,100,70,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
+      position: relative;
+    }
+    .mockup-c .m-section-badge {
+      display: inline-flex; align-items: center;
+      background: rgba(0,105,70,0.1); color: #006946;
+      font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 100px;
+      margin-bottom: 0.75rem; font-family: 'JetBrains Mono', monospace;
+    }
+    .mockup-c .m-row { margin-bottom: 0.625rem; }
+    .mockup-c .m-label { font-size: 0.6875rem; color: #666; margin-bottom: 0.25rem; font-weight: 500; display: block; }
+    .mockup-c .m-input {
+      width: 100%; background: rgba(255,255,255,0.5); border: 1.5px solid rgba(0,105,70,0.12);
+      padding: 0.5rem 0.875rem; font-size: 0.8125rem; font-family: 'JetBrains Mono', monospace;
+      color: #111; border-radius: 100px;
+    }
+    .mockup-c .m-results {
+      background: rgba(5, 55, 35, 0.88); border-radius: 18px; padding: 1.125rem;
+      border: 1px solid rgba(0,180,100,0.15);
+      box-shadow: 0 8px 32px rgba(0,60,30,0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+      position: relative;
+    }
+    .mockup-c .m-results-title { font-size: 0.5625rem; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.3); margin-bottom: 0.75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .mockup-c .m-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .mockup-c .m-result-item {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 0.75rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .mockup-c .m-result-label { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.3); margin-bottom: 0.2rem; font-weight: 700; }
+    .mockup-c .m-result-value { font-size: 1rem; font-weight: 700; color: white; font-family: 'JetBrains Mono', monospace; }
+    .mockup-c .m-result-delta { font-size: 0.5rem; color: #FFF200; font-weight: 700; }
+    .mockup-c .m-total { border-top: 1px solid rgba(255,255,255,0.07); padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: baseline; }
+    .mockup-c .m-total-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); font-weight: 500; }
+    .mockup-c .m-total-value { font-size: 1.75rem; font-weight: 700; color: #FFF200; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.02em; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .comparison-panels { grid-template-columns: 1fr; }
+      .overview-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .container { padding: 0 1rem; }
+      .audit-grid { grid-template-columns: 1fr; }
+      .changes-grid { grid-template-columns: 1fr; }
+      .option-tabs { flex-wrap: wrap; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="container">
+    <div class="taste-badge">✦ Taste-Skill Analysis</div>
+    <h1>Recommandations<br>Design</h1>
+    <p>3 directions d'amélioration pour le CI Financial Calculator</p>
+    <a href="index.html" class="back-link">← Production actuelle</a>
+  </div>
+</header>
+
+<section class="audit-section">
+  <div class="container">
+    <div class="section-label">Audit — 6 points identifiés</div>
+    <h2 class="section-title">Ce qui peut être amélioré</h2>
+    <div class="audit-grid">
+      <div class="audit-item critical">
+        <div class="audit-category">Typographie</div>
+        <div class="audit-item-title">Inter comme seule police</div>
+        <div class="audit-desc">Pas de police d'affichage distincte. Les titres manquent de présence. Seuls Regular et Bold sont utilisés.</div>
+      </div>
+      <div class="audit-item critical">
+        <div class="audit-category">Couleur & Surfaces</div>
+        <div class="audit-item-title">Gradient linéaire générique</div>
+        <div class="audit-desc">Le dégradé 135° est le pattern "AI design" le plus commun. La section verte rompt brusquement avec le fond crème.</div>
+      </div>
+      <div class="audit-item medium">
+        <div class="audit-category">Composants</div>
+        <div class="audit-item-title">Cartes border + shadow + blanc</div>
+        <div class="audit-desc">Le pattern le plus générique. Toutes les cartes sont identiques — aucune hiérarchie visuelle entre elles.</div>
+      </div>
+      <div class="audit-item medium">
+        <div class="audit-category">Interactivité</div>
+        <div class="audit-item-title">Résultats sans animation</div>
+        <div class="audit-desc">Les chiffres apparaissent instantanément. Un count-up renforce l'impact émotionnel et la lisibilité des gains.</div>
+      </div>
+      <div class="audit-item low">
+        <div class="audit-category">Surfaces</div>
+        <div class="audit-item-title">Fond plat sans texture</div>
+        <div class="audit-desc">Aucun grain, aucun bruit de fond. Une texture subtile distinguerait le design de l'esthétique "outil IA" standard.</div>
+      </div>
+      <div class="audit-item low">
+        <div class="audit-category">Typographie</div>
+        <div class="audit-item-title">Sections UPPERCASE partout</div>
+        <div class="audit-desc">Tous les titres de section sont en majuscules avec espacement de lettres. Varier les styles renforcerait la hiérarchie.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="comparison-section">
+  <div class="container">
+    <div class="section-label">Comparaison avant / après</div>
+    <h2 class="section-title">Choisissez une direction</h2>
+
+    <div class="option-tabs">
+      <button class="option-tab active" onclick="selectOption('a', this)">A — Analyst Pro</button>
+      <button class="option-tab" onclick="selectOption('b', this)">B — Command Center</button>
+      <button class="option-tab" onclick="selectOption('c', this)">C — Glass Premium</button>
+    </div>
+
+    <div class="comparison-panels">
+
+      <!-- BEFORE -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-label">Avant</span>
+          <span class="panel-name">Production actuelle</span>
+        </div>
+        <div class="panel-body">
+          <div class="mockup mockup-before">
+            <div class="m-header">
+              <div>
+                <div class="m-title">CI Financial Impact</div>
+                <div class="m-subtitle">Continuous Improvement Calculator</div>
+              </div>
+              <div class="m-controls">
+                <div class="m-btn">☀</div>
+                <div class="m-btn">$</div>
+                <div class="m-btn">↗</div>
+              </div>
+            </div>
+            <div class="m-card">
+              <div class="m-section-title">Team Economics</div>
+              <div class="m-row">
+                <label class="m-label">Blend Rate</label>
+                <div class="m-input">85</div>
+              </div>
+              <div class="m-row">
+                <label class="m-label">Team Size</label>
+                <div class="m-input">8</div>
+              </div>
+              <div class="m-row">
+                <label class="m-label">Hours / Day</label>
+                <div class="m-input">7</div>
+              </div>
+            </div>
+            <div class="m-results">
+              <div class="m-results-title">Period Savings Summary</div>
+              <div class="m-results-grid">
+                <div class="m-result-item">
+                  <div class="m-result-label">Productivity</div>
+                  <div class="m-result-value">$24K</div>
+                  <div class="m-result-delta">▲ +18%</div>
+                </div>
+                <div class="m-result-item">
+                  <div class="m-result-label">Time-to-Market</div>
+                  <div class="m-result-value">$31K</div>
+                  <div class="m-result-delta">▲ +22%</div>
+                </div>
+                <div class="m-result-item">
+                  <div class="m-result-label">Efficiency (WIP)</div>
+                  <div class="m-result-value">$8K</div>
+                  <div class="m-result-delta">▲ +12%</div>
+                </div>
+                <div class="m-result-item">
+                  <div class="m-result-label">Quality</div>
+                  <div class="m-result-value">$18K</div>
+                  <div class="m-result-delta">▲ +35%</div>
+                </div>
+              </div>
+              <div class="m-total">
+                <span class="m-total-label">Total Période</span>
+                <span class="m-total-value">$81K</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AFTER (dynamic) -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-label">Après</span>
+          <span class="panel-name" id="after-label">Option A — Analyst Pro</span>
+        </div>
+        <div class="panel-body">
+
+          <!-- OPTION A -->
+          <div class="option-content active" id="content-a">
+            <div class="mockup mockup-a">
+              <div class="m-header">
+                <div>
+                  <div class="m-eyebrow">Agile ROI Calculator</div>
+                  <div class="m-title">CI Financial Impact</div>
+                </div>
+                <div class="m-controls">
+                  <div class="m-btn">☀</div>
+                  <div class="m-btn">$</div>
+                  <div class="m-btn">↗</div>
+                </div>
+              </div>
+              <div class="m-card">
+                <div class="m-section-title">Team Economics</div>
+                <div class="m-row">
+                  <label class="m-label">Blend Rate</label>
+                  <div class="m-input">85</div>
+                </div>
+                <div class="m-row">
+                  <label class="m-label">Team Size</label>
+                  <div class="m-input">8</div>
+                </div>
+                <div class="m-row">
+                  <label class="m-label">Hours / Day</label>
+                  <div class="m-input">7</div>
+                </div>
+              </div>
+              <div class="m-results">
+                <div class="m-results-title">Period Savings</div>
+                <div class="m-results-grid">
+                  <div class="m-result-item">
+                    <div class="m-result-label">Productivity</div>
+                    <div class="m-result-value">$24K</div>
+                    <div class="m-result-delta">▲ +18%</div>
+                  </div>
+                  <div class="m-result-item">
+                    <div class="m-result-label">Time-to-Market</div>
+                    <div class="m-result-value">$31K</div>
+                    <div class="m-result-delta">▲ +22%</div>
+                  </div>
+                  <div class="m-result-item">
+                    <div class="m-result-label">Efficiency</div>
+                    <div class="m-result-value">$8K</div>
+                    <div class="m-result-delta">▲ +12%</div>
+                  </div>
+                  <div class="m-result-item">
+                    <div class="m-result-label">Quality</div>
+                    <div class="m-result-value">$18K</div>
+                    <div class="m-result-delta">▲ +35%</div>
+                  </div>
+                </div>
+                <div class="m-total">
+                  <span class="m-total-label">Total période</span>
+                  <span class="m-total-value">$81K</span>
+                </div>
+              </div>
+            </div>
+            <div class="changes-section">
+              <div class="changes-label">Changements — Option A</div>
+              <div class="changes-title">Analyst Pro</div>
+              <div class="changes-grid">
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0fdf4;">🔡</div>
+                  <div>
+                    <div class="change-text-title">Outfit 800 pour les titres</div>
+                    <div class="change-text-desc">Inter → Outfit weight 800. Plus de présence, lettre-spacing négatif.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0fdf4;">📐</div>
+                  <div>
+                    <div class="change-text-title">Inputs underline only</div>
+                    <div class="change-text-desc">Border pleine → ligne du bas. Look éditorial, plus de bruit visuel.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0fdf4;">🎨</div>
+                  <div>
+                    <div class="change-text-title">Résumé sur fond blanc</div>
+                    <div class="change-text-desc">Gradient vert → fond blanc + border-left verte. Cohérence totale de page.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0fdf4;">✦</div>
+                  <div>
+                    <div class="change-text-title">Accent gauche sur les cartes</div>
+                    <div class="change-text-desc">Shadow générique → border-left verte 3px. Hiérarchie sans bruit.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0fdf4;">💚</div>
+                  <div>
+                    <div class="change-text-title">Chiffres résultats en vert</div>
+                    <div class="change-text-desc">Valeurs en vert + weight 800. L'impact financier saute aux yeux.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0fdf4;">⬆</div>
+                  <div>
+                    <div class="change-text-title">Total dominant en noir</div>
+                    <div class="change-text-desc">1.875rem font-size + border-top noire 2px. KPI principal clairement dominant.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- OPTION B -->
+          <div class="option-content" id="content-b">
+            <div class="mockup mockup-b">
+              <div class="m-header">
+                <div class="m-title">CI_FINANCIAL_CALCULATOR</div>
+                <div class="m-controls">
+                  <div class="m-btn">☀</div>
+                  <div class="m-btn">$</div>
+                </div>
+              </div>
+              <div class="m-card">
+                <div class="m-section-title">// TEAM_ECONOMICS</div>
+                <div class="m-row">
+                  <span class="m-label">BLEND_RATE</span>
+                  <div class="m-input">85</div>
+                </div>
+                <div class="m-row">
+                  <span class="m-label">TEAM_SIZE</span>
+                  <div class="m-input">8</div>
+                </div>
+                <div class="m-row">
+                  <span class="m-label">HOURS_DAY</span>
+                  <div class="m-input">7</div>
+                </div>
+              </div>
+              <div class="m-results">
+                <div class="m-results-title">// PERIOD_OUTPUT</div>
+                <div class="m-results-grid">
+                  <div class="m-result-item">
+                    <div class="m-result-label">PRODUCTIVITY</div>
+                    <div class="m-result-value">$24K</div>
+                    <div class="m-result-delta">+18.0%</div>
+                  </div>
+                  <div class="m-result-item">
+                    <div class="m-result-label">TIME_TO_MKT</div>
+                    <div class="m-result-value">$31K</div>
+                    <div class="m-result-delta">+22.0%</div>
+                  </div>
+                  <div class="m-result-item">
+                    <div class="m-result-label">EFFICIENCY</div>
+                    <div class="m-result-value">$8K</div>
+                    <div class="m-result-delta">+12.0%</div>
+                  </div>
+                  <div class="m-result-item">
+                    <div class="m-result-label">QUALITY</div>
+                    <div class="m-result-value">$18K</div>
+                    <div class="m-result-delta">+35.0%</div>
+                  </div>
+                </div>
+                <div class="m-total">
+                  <span class="m-total-label">TOTAL_PERIOD</span>
+                  <span class="m-total-value">$81K</span>
+                </div>
+              </div>
+            </div>
+            <div class="changes-section">
+              <div class="changes-label">Changements — Option B</div>
+              <div class="changes-title">Command Center</div>
+              <div class="changes-grid">
+                <div class="change-item">
+                  <div class="change-icon" style="background:#111;font-size:0.8rem;">🖥</div>
+                  <div>
+                    <div class="change-text-title">Sombre par défaut</div>
+                    <div class="change-text-desc">#080808 comme background. Cible les CFO habitués aux dashboards financiers.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f5f5f5;">⌨️</div>
+                  <div>
+                    <div class="change-text-title">JetBrains Mono exclusif</div>
+                    <div class="change-text-desc">Police mono partout. Alignement parfait des colonnes de chiffres.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f5f5f5;">🟢</div>
+                  <div>
+                    <div class="change-text-title">Vert #00c47d sur noir</div>
+                    <div class="change-text-desc">Accent vert vif réservé aux valeurs. Contraste maximal, lisibilité immédiate.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f5f5f5;">💛</div>
+                  <div>
+                    <div class="change-text-title">Total en jaune FFF200</div>
+                    <div class="change-text-desc">Distinction visuelle forte entre métriques individuelles et KPI principal.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f5f5f5;">🔲</div>
+                  <div>
+                    <div class="change-text-title">Radii réduits à 4-6px</div>
+                    <div class="change-text-desc">Aesthetic data-room. Professionnel, sans rondeurs qui adoucissent trop.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f5f5f5;">📊</div>
+                  <div>
+                    <div class="change-text-title">Labels inline avec inputs</div>
+                    <div class="change-text-desc">Label gauche + input droite. Layout tabulaire, lecture rapide top-to-bottom.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- OPTION C -->
+          <div class="option-content" id="content-c">
+            <div class="mockup mockup-c">
+              <div class="m-header">
+                <div class="m-nav-pill">
+                  <span style="color:#006946;font-weight:800;font-size:0.875rem;">✦</span>
+                  <div class="m-title">CI Financial Calculator</div>
+                </div>
+                <div class="m-controls">
+                  <div class="m-btn">☀</div>
+                  <div class="m-btn">$</div>
+                  <div class="m-btn">↗</div>
+                </div>
+              </div>
+              <div class="m-card">
+                <div class="m-section-badge">Team Economics</div>
+                <div class="m-row">
+                  <label class="m-label">Blend Rate</label>
+                  <div class="m-input">85</div>
+                </div>
+                <div class="m-row">
+                  <label class="m-label">Team Size</label>
+                  <div class="m-input">8</div>
+                </div>
+                <div class="m-row">
+                  <label class="m-label">Hours / Day</label>
+                  <div class="m-input">7</div>
+                </div>
+              </div>
+              <div class="m-results">
+                <div class="m-results-title">Period Savings</div>
+                <div class="m-results-grid">
+                  <div class="m-result-item">
+                    <div class="m-result-label">Productivity</div>
+                    <div class="m-result-value">$24K</div>
+                    <div class="m-result-delta">▲ +18%</div>
+                  </div>
+                  <div class="m-result-item">
+                    <div class="m-result-label">Time-to-Market</div>
+                    <div class="m-result-value">$31K</div>
+                    <div class="m-result-delta">▲ +22%</div>
+                  </div>
+                  <div class="m-result-item">
+                    <div class="m-result-label">Efficiency</div>
+                    <div class="m-result-value">$8K</div>
+                    <div class="m-result-delta">▲ +12%</div>
+                  </div>
+                  <div class="m-result-item">
+                    <div class="m-result-label">Quality</div>
+                    <div class="m-result-value">$18K</div>
+                    <div class="m-result-delta">▲ +35%</div>
+                  </div>
+                </div>
+                <div class="m-total">
+                  <span class="m-total-label">Total période</span>
+                  <span class="m-total-value">$81K</span>
+                </div>
+              </div>
+            </div>
+            <div class="changes-section">
+              <div class="changes-label">Changements — Option C</div>
+              <div class="changes-title">Glass Premium</div>
+              <div class="changes-grid">
+                <div class="change-item">
+                  <div class="change-icon" style="background:linear-gradient(135deg,#dff0ea,#dce9f8);">🌊</div>
+                  <div>
+                    <div class="change-text-title">Fond mesh gradient</div>
+                    <div class="change-text-desc">Cream plat → gradient radial vert/bleu/violet. Profondeur atmosphérique.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0f8ff;">🪟</div>
+                  <div>
+                    <div class="change-text-title">True glassmorphism</div>
+                    <div class="change-text-desc">Cards rgba + backdrop-blur + inner-shadow + border 1px. Profondeur physique réelle.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0f8ff;">💊</div>
+                  <div>
+                    <div class="change-text-title">Navigation pill flottante</div>
+                    <div class="change-text-desc">Header flat → pill glassmorphism. Détachée du bord, plus moderne.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0f8ff;">🏷</div>
+                  <div>
+                    <div class="change-text-title">Pill badges de section</div>
+                    <div class="change-text-desc">UPPERCASE text → pill badge vert pâle. Hiérarchie douce et lisible.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0f8ff;">⭕</div>
+                  <div>
+                    <div class="change-text-title">Inputs pill-shape</div>
+                    <div class="change-text-desc">border-radius 12px → 100px. Cohérent avec la nav pill, style moderne.</div>
+                  </div>
+                </div>
+                <div class="change-item">
+                  <div class="change-icon" style="background:#f0f8ff;">⚠️</div>
+                  <div>
+                    <div class="change-text-title">Risque: performance mobile</div>
+                    <div class="change-text-desc">backdrop-filter sur cartes scrollables = GPU repaints. À limiter aux éléments fixes.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="overview-section">
+  <div class="container">
+    <div class="section-label">Vue d'ensemble</div>
+    <h2 class="section-title">Les 3 directions</h2>
+    <div class="overview-grid">
+
+      <!-- CARD A -->
+      <div class="overview-card">
+        <div class="option-badge" style="background:#f0fdf4;color:#15803d;">Option A</div>
+        <h3>Analyst Pro</h3>
+        <div class="tagline">Minimal. Éditorial. Chiffres d'abord.</div>
+        <div class="dials">
+          <div class="dial">
+            <div class="dial-name">Variance</div>
+            <div class="dial-value">3</div>
+            <div class="dial-bar"><div class="dial-fill" style="width:30%;"></div></div>
+          </div>
+          <div class="dial">
+            <div class="dial-name">Motion</div>
+            <div class="dial-value">2</div>
+            <div class="dial-bar"><div class="dial-fill" style="width:20%;"></div></div>
+          </div>
+          <div class="dial">
+            <div class="dial-name">Density</div>
+            <div class="dial-value">4</div>
+            <div class="dial-bar"><div class="dial-fill" style="width:40%;"></div></div>
+          </div>
+        </div>
+        <div class="design-tokens">
+          <div class="token-row">
+            <span class="token-label">Font</span>
+            <span class="token-value">Outfit 800 (titres) + Inter + JetBrains</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label">BG</span>
+            <div class="token-swatch" style="background:#F9F8F6;"></div>
+            <span class="token-value">#F9F8F6 (cream plus blanc)</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label">Accent</span>
+            <div class="token-swatch" style="background:#006946;"></div>
+            <span class="token-value">#006946 (inchangé)</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label">Input</span>
+            <span class="token-value">border-bottom 1.5px only</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label">Cards</span>
+            <span class="token-value">border-left 3px, no shadow</span>
+          </div>
+        </div>
+        <ul class="changes-list">
+          <li>Eyebrow label au-dessus du titre principal</li>
+          <li>Résultats sur fond blanc, cohérence page</li>
+          <li>Valeurs en vert bold, total en noir dominant</li>
+          <li>Titres de section non-uppercase</li>
+          <li>Risque: faible — changements CSS uniquement</li>
+        </ul>
+      </div>
+
+      <!-- CARD B -->
+      <div class="overview-card" style="background:#080808;border-color:#1a1a1a;">
+        <div class="option-badge" style="background:#0f2a1a;color:#00c47d;">Option B</div>
+        <h3 style="color:white;">Command Center</h3>
+        <div class="tagline" style="color:#444;">Dark. Terminal. Data-dense.</div>
+        <div class="dials">
+          <div class="dial" style="background:#111;">
+            <div class="dial-name" style="color:#444;">Variance</div>
+            <div class="dial-value" style="color:#00c47d;">5</div>
+            <div class="dial-bar" style="background:#1a1a1a;"><div class="dial-fill" style="width:50%;background:#00c47d;"></div></div>
+          </div>
+          <div class="dial" style="background:#111;">
+            <div class="dial-name" style="color:#444;">Motion</div>
+            <div class="dial-value" style="color:#00c47d;">4</div>
+            <div class="dial-bar" style="background:#1a1a1a;"><div class="dial-fill" style="width:40%;background:#00c47d;"></div></div>
+          </div>
+          <div class="dial" style="background:#111;">
+            <div class="dial-name" style="color:#444;">Density</div>
+            <div class="dial-value" style="color:#00c47d;">7</div>
+            <div class="dial-bar" style="background:#1a1a1a;"><div class="dial-fill" style="width:70%;background:#00c47d;"></div></div>
+          </div>
+        </div>
+        <div class="design-tokens" style="background:#0f0f0f;">
+          <div class="token-row">
+            <span class="token-label" style="color:#444;">Font</span>
+            <span class="token-value" style="color:#ccc;">JetBrains Mono (exclusif)</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label" style="color:#444;">BG</span>
+            <div class="token-swatch" style="background:#080808;border-color:#333;"></div>
+            <span class="token-value" style="color:#ccc;">#080808</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label" style="color:#444;">Accent</span>
+            <div class="token-swatch" style="background:#00c47d;"></div>
+            <span class="token-value" style="color:#ccc;">#00c47d</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label" style="color:#444;">Total</span>
+            <div class="token-swatch" style="background:#FFF200;"></div>
+            <span class="token-value" style="color:#ccc;">#FFF200</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label" style="color:#444;">Radius</span>
+            <span class="token-value" style="color:#ccc;">4-6px (sharp edges)</span>
+          </div>
+        </div>
+        <ul class="changes-list">
+          <li style="color:#555;border-color:#1a1a1a;">Mode sombre permanent (pas de toggle light)</li>
+          <li style="color:#555;border-color:#1a1a1a;">Labels inline avec inputs (tabulaire)</li>
+          <li style="color:#555;border-color:#1a1a1a;">Count-up animation sur les résultats</li>
+          <li style="color:#555;border-color:#1a1a1a;">Grain overlay discret (#noise-overlay fixé)</li>
+          <li style="color:#555;border-color:transparent;">Risque: moyen — refonte de la palette</li>
+        </ul>
+      </div>
+
+      <!-- CARD C -->
+      <div class="overview-card" style="background:linear-gradient(135deg,#dff0ea,#dce9f8);border-color:rgba(255,255,255,0.7);">
+        <div class="option-badge" style="background:rgba(0,105,70,0.1);color:#006946;">Option C</div>
+        <h3>Glass Premium</h3>
+        <div class="tagline">Glassmorphism. Fluide. Moderne.</div>
+        <div class="dials">
+          <div class="dial" style="background:rgba(255,255,255,0.5);">
+            <div class="dial-name">Variance</div>
+            <div class="dial-value">7</div>
+            <div class="dial-bar"><div class="dial-fill" style="width:70%;"></div></div>
+          </div>
+          <div class="dial" style="background:rgba(255,255,255,0.5);">
+            <div class="dial-name">Motion</div>
+            <div class="dial-value">5</div>
+            <div class="dial-bar"><div class="dial-fill" style="width:50%;"></div></div>
+          </div>
+          <div class="dial" style="background:rgba(255,255,255,0.5);">
+            <div class="dial-name">Density</div>
+            <div class="dial-value">5</div>
+            <div class="dial-bar"><div class="dial-fill" style="width:50%;"></div></div>
+          </div>
+        </div>
+        <div class="design-tokens" style="background:rgba(255,255,255,0.45);">
+          <div class="token-row">
+            <span class="token-label">Font</span>
+            <span class="token-value">Inter (inchangé) + verre</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label">BG</span>
+            <div class="token-swatch" style="background:linear-gradient(135deg,#dff0ea,#dce9f8);"></div>
+            <span class="token-value">Mesh gradient</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label">Cards</span>
+            <span class="token-value">rgba(255,255,255,0.55) + blur</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label">Nav</span>
+            <span class="token-value">Floating pill glassmorphism</span>
+          </div>
+          <div class="token-row">
+            <span class="token-label">Input</span>
+            <span class="token-value">border-radius: 100px</span>
+          </div>
+        </div>
+        <ul class="changes-list">
+          <li>Fond mesh gradient ambiant</li>
+          <li>Navigation floating pill (détachée)</li>
+          <li>Pill badges de section (plus d'UPPERCASE)</li>
+          <li>Résumé en dark glass, total jaune</li>
+          <li>Risque: élevé — backdrop-blur sur mobile</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="page-footer">
+  <div class="container">
+    <p>Généré avec <strong>taste-skill</strong> (leonxlnx/taste-skill) · CI Financial Calculator by Pierre-Cyril Denant</p>
+  </div>
+</footer>
+
+<script>
+  const labels = {
+    a: 'Option A — Analyst Pro',
+    b: 'Option B — Command Center',
+    c: 'Option C — Glass Premium'
+  };
+
+  function selectOption(opt, btn) {
+    document.querySelectorAll('.option-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('after-label').textContent = labels[opt];
+    document.querySelectorAll('.option-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('content-' + opt).classList.add('active');
+  }
+</script>
+
+</body>
+</html>
