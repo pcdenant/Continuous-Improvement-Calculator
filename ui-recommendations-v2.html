@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI Calculator — Buttons &amp; Breakdown: 3 Approaches</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --green: #00a86b;
+            --green-dark: #004d32;
+            --yellow: #FFF200;
+            --bg: #f5f7f5;
+            --text: #1a1a1a;
+            --muted: #5a7060;
+            --border: #c5d5c9;
+            --surface: #ffffff;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+        /* PAGE CHROME */
+        .page-header {
+            background: var(--green-dark);
+            padding: 2rem 2rem 1.5rem;
+            position: relative; overflow: hidden;
+        }
+        .page-header::after {
+            content: ''; position: absolute; inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+            background-size: 24px 24px; pointer-events: none;
+        }
+        .page-header h1 { font-size: 1.375rem; font-weight: 700; color: var(--yellow); margin-bottom: 0.25rem; position: relative; z-index: 1; }
+        .page-header p { font-size: 0.8125rem; color: rgba(255,255,255,0.6); font-family: 'JetBrains Mono', monospace; position: relative; z-index: 1; }
+        .page-container { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+        /* APPROACH TABS */
+        .approach-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 2rem; overflow-x: auto; }
+        .approach-tab {
+            padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer;
+            border-bottom: 2px solid transparent; margin-bottom: -2px; color: var(--muted);
+            transition: color 0.15s, border-color 0.15s; white-space: nowrap; user-select: none;
+        }
+        .approach-tab:hover { color: var(--text); }
+        .approach-tab.active { color: var(--green-dark); border-bottom-color: var(--green-dark); }
+        .approach-panel { display: none; }
+        .approach-panel.active { display: block; }
+
+        /* META CARDS */
+        .approach-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 600px) { .approach-meta { grid-template-columns: 1fr; } }
+        .meta-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
+        .meta-card h3 { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 0.5rem; }
+        .meta-card p { font-size: 0.875rem; line-height: 1.6; }
+        .change-list { list-style: none; font-size: 0.8125rem; line-height: 1.9; }
+        .change-list li { display: flex; gap: 0.5rem; }
+        .change-list li::before { content: '→'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+        /* BEFORE/AFTER TOGGLE */
+        .toggle-bar { display: flex; align-items: center; gap: 0; margin-bottom: 1rem; }
+        .toggle-btn {
+            padding: 0.5rem 1.25rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer;
+            border: 1px solid var(--border); background: var(--surface); color: var(--muted); transition: all 0.15s;
+        }
+        .toggle-btn:first-child { border-radius: 6px 0 0 6px; border-right: none; }
+        .toggle-btn:last-child { border-radius: 0 6px 6px 0; }
+        .toggle-btn.active { background: var(--green-dark); color: white; border-color: var(--green-dark); }
+        .mockup-label { margin-left: 1rem; font-size: 0.75rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+        /* MOCKUP SHELL */
+        .mockup-shell { border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,0.12); }
+        .mockup-before, .mockup-after { display: none; }
+        .mockup-before.visible, .mockup-after.visible { display: block; }
+
+        /* SHARED MOCKUP CONTEXT (dimmed — not the focus) */
+        .mock-summary { background: #004d32; padding: 1.5rem; }
+        .mock-section-title {
+            font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.9);
+            margin-bottom: 1rem; padding-bottom: 0.625rem; border-bottom: 1px solid rgba(255,255,255,0.15);
+            font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .mock-section-title-flex { display: flex; justify-content: space-between; align-items: center; }
+        .mock-dim-rows { display: flex; flex-direction: column; margin-bottom: 1rem; opacity: 0.55; }
+        .mock-dim-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; border-left: 3px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .mock-dim-label { color: rgba(255,255,255,0.55); font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .mock-dim-value { color: white; font-family: 'JetBrains Mono', monospace; font-size: 0.9375rem; font-weight: 700; }
+        .mock-total-hero { text-align: center; padding: 1rem 1rem 0.875rem; border-top: 1px solid rgba(255,255,255,0.12); margin-bottom: 1.25rem; opacity: 0.55; }
+        .mock-total-label { font-size: 0.625rem; color: rgba(255,255,255,0.5); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.2rem; }
+        .mock-total-value { font-size: 2.25rem; font-weight: 700; color: white; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.02em; }
+        .mock-total-annual { font-size: 0.6875rem; color: rgba(255,255,255,0.4); font-family: 'JetBrains Mono', monospace; }
+
+        /* ---- BEFORE STATE (shared) ---- */
+        .before-action-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .before-btn { background: var(--yellow); color: #004d32; border: none; padding: 0.875rem 1.5rem; border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: default; }
+        .before-btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.875rem 1.5rem; border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: default; }
+        .before-btn-danger { background: transparent; color: rgba(255,149,0,0.9); border: 1px solid rgba(255,149,0,0.5); padding: 0.875rem 1.5rem; border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: default; margin-left: auto; }
+        .before-breakdown { border-top: 2px solid rgba(255,255,255,0.2); padding-top: 1.5rem; }
+        .before-bd-section { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+        .before-bd-section:last-child { margin-bottom: 0; }
+        .before-bd-header { font-family: 'JetBrains Mono', monospace; font-size: 0.9375rem; color: var(--yellow); margin-bottom: 0.875rem; font-weight: 600; }
+        .before-formula { background: rgba(0,0,0,0.2); padding: 0.875rem; border-radius: 8px; border-left: 3px solid var(--yellow); margin-bottom: 0.875rem; }
+        .before-formula-title { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.5); margin-bottom: 0.375rem; }
+        .before-formula-text { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: white; line-height: 1.5; }
+        .before-detail { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.8125rem; }
+        .before-detail:last-child { border-bottom: none; }
+        .before-detail-label { color: rgba(255,255,255,0.75); }
+        .before-detail-value { font-family: 'JetBrains Mono', monospace; color: white; font-weight: 500; }
+
+        /* ---- APPROACH A AFTER ---- */
+        .a-action-buttons { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+        .a-btn { background: var(--yellow); color: #004d32; border: none; padding: 0.75rem 1.25rem; border-radius: 4px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: default; }
+        .a-btn-secondary { background: transparent; color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.35); padding: 0.75rem 1.25rem; border-radius: 4px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 500; cursor: default; }
+        .a-btn-danger { background: transparent; color: rgba(255,149,0,0.65); border: none; padding: 0.75rem 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.8125rem; font-weight: 500; cursor: default; margin-left: auto; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255,149,0,0.3); }
+        .a-breakdown { border-top: 1px solid rgba(255,255,255,0.15); padding-top: 1.25rem; }
+        .a-bd-section { margin-bottom: 1.25rem; }
+        .a-bd-section:last-child { margin-bottom: 0; }
+        .a-bd-header { font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--yellow); margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.12); }
+        .a-formula { border-left: 3px solid var(--yellow); padding: 0.5rem 0.875rem; margin-bottom: 0.75rem; }
+        .a-formula-title { font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.4); margin-bottom: 0.2rem; }
+        .a-formula-text { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+        .a-detail { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 0.8125rem; }
+        .a-detail:last-child { border-bottom: none; }
+        .a-detail-label { color: rgba(255,255,255,0.7); }
+        .a-detail-value { font-family: 'JetBrains Mono', monospace; color: white; font-weight: 500; }
+
+        /* ---- APPROACH B AFTER ---- */
+        .b-action-buttons { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+        .b-btn { background: var(--yellow); color: #004d32; border: 1px solid var(--yellow); padding: 0.75rem 1.25rem; border-radius: 0; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; font-weight: 700; cursor: default; text-transform: uppercase; letter-spacing: 0.1em; }
+        .b-btn-secondary { background: transparent; color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.5); padding: 0.75rem 1.25rem; border-radius: 0; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; font-weight: 600; cursor: default; text-transform: uppercase; letter-spacing: 0.1em; }
+        .b-btn-danger { background: transparent; color: rgba(255,149,0,0.9); border: 1px solid rgba(255,149,0,0.6); padding: 0.75rem 1.25rem; border-radius: 0; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; font-weight: 600; cursor: default; text-transform: uppercase; letter-spacing: 0.1em; margin-left: auto; }
+        .b-tabs-wrap { margin-top: 1.25rem; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 1.25rem; }
+        .b-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 1rem; overflow-x: auto; }
+        .b-tab { padding: 0.625rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; color: rgba(255,255,255,0.4); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
+        .b-tab:hover { color: rgba(255,255,255,0.7); }
+        .b-tab.active { color: var(--yellow); border-bottom-color: var(--yellow); }
+        .b-panel { display: none; }
+        .b-panel.active { display: block; }
+        .b-formula { border-left: 3px solid var(--yellow); padding: 0.5rem 0.875rem; margin-bottom: 0.75rem; }
+        .b-formula-title { font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.4); margin-bottom: 0.2rem; font-family: 'JetBrains Mono', monospace; }
+        .b-formula-text { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+        .b-detail { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 0.8125rem; }
+        .b-detail:last-child { border-bottom: none; }
+        .b-detail-label { color: rgba(255,255,255,0.7); }
+        .b-detail-value { font-family: 'JetBrains Mono', monospace; color: white; font-weight: 500; }
+
+        /* ---- APPROACH C AFTER ---- */
+        .c-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: rgba(255,255,255,0.7); cursor: default; flex-shrink: 0; }
+        .c-icon-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .c-disclosure { display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 0 0; border-top: 1px solid rgba(255,255,255,0.12); cursor: default; color: rgba(255,255,255,0.45); font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .c-chevron { font-size: 0.5625rem; transition: transform 0.2s ease; }
+        .c-chevron.open { transform: rotate(180deg); }
+        .c-clear-btn { margin-left: auto; color: rgba(255,149,0,0.45); font-family: 'JetBrains Mono', monospace; font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; transition: color 0.15s; }
+        .c-clear-btn:hover { color: rgba(255,149,0,0.8); }
+        .c-grid { display: grid; grid-template-columns: 1fr 1fr; background: rgba(255,255,255,0.08); gap: 1px; margin-top: 1rem; }
+        .c-quadrant { background: #004d32; padding: 1rem; }
+        .c-q-header { font-family: 'JetBrains Mono', monospace; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--yellow); margin-bottom: 0.75rem; }
+        .c-formula-toggle { display: inline-flex; align-items: center; gap: 0.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.5625rem; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.06em; cursor: default; margin-bottom: 0.625rem; padding: 0.2rem 0.45rem; border: 1px solid rgba(255,255,255,0.1); }
+        .c-detail { display: flex; justify-content: space-between; padding: 0.375rem 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.75rem; }
+        .c-detail:last-child { border-bottom: none; }
+        .c-detail-label { color: rgba(255,255,255,0.6); }
+        .c-detail-value { font-family: 'JetBrains Mono', monospace; color: white; font-weight: 500; }
+
+        /* BADGES & ANNOTATION */
+        .badge-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.875rem; }
+        .badge { font-size: 0.6875rem; font-family: 'JetBrains Mono', monospace; padding: 0.25rem 0.625rem; border-radius: 3px; font-weight: 600; }
+        .badge-fix { background: #e8f5ee; color: #006946; }
+        .badge-remove { background: #fff0e6; color: #c45000; }
+        .badge-new { background: #e8eeff; color: #1a3acc; }
+        .annotation { background: var(--surface); border-left: 3px solid var(--green); padding: 0.875rem 1rem; margin-top: 1rem; border-radius: 0 6px 6px 0; font-size: 0.8125rem; line-height: 1.6; }
+        .annotation strong { color: var(--green-dark); }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <h1>CI Calculator — Buttons &amp; Breakdown</h1>
+    <p>3 distinct approaches · select the best version to implement</p>
+</div>
+
+<div class="page-container">
+
+    <div class="approach-nav">
+        <div class="approach-tab active" data-panel="a">A — Refined Restraint</div>
+        <div class="approach-tab" data-panel="b">B — Instrument Panel</div>
+        <div class="approach-tab" data-panel="c">C — Embedded Actions</div>
+    </div>
+
+    <!-- ===== APPROACH A ===== -->
+    <div class="approach-panel active" id="panel-a">
+        <div class="approach-meta">
+            <div class="meta-card">
+                <h3>Philosophy</h3>
+                <p>Fix the Impeccable violations without changing the visual language. Hierarchy from spacing and weight alone — zero decorative motion.</p>
+            </div>
+            <div class="meta-card">
+                <h3>Key Changes</h3>
+                <ul class="change-list">
+                    <li>Button radius 12px → 4px (matches inputs)</li>
+                    <li>Remove <code>translateY(-1px)</code> hover lift</li>
+                    <li>Save/Share: glass bg → border-only</li>
+                    <li>Clear Data: border button → text-link, right-aligned</li>
+                    <li>Breakdown: remove nested section cards</li>
+                    <li>Animation: opacity-only, no translateY</li>
+                </ul>
+            </div>
+        </div>
+        <div class="toggle-bar">
+            <button class="toggle-btn" data-state="before" data-target="a">Before</button>
+            <button class="toggle-btn active" data-state="after" data-target="a">After</button>
+            <span class="mockup-label" id="a-label">Showing: After</span>
+        </div>
+        <div class="mockup-shell">
+            <div class="mockup-before" id="a-before">
+                <div class="mock-summary">
+                    <div class="mock-section-title">Financial Impact</div>
+                    <div class="mock-dim-rows">
+                        <div class="mock-dim-row"><span class="mock-dim-label">Productivity</span><span class="mock-dim-value">+$124K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Time-to-Market</span><span class="mock-dim-value">+$89K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Efficiency</span><span class="mock-dim-value">+$43K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Quality</span><span class="mock-dim-value">+$31K</span></div>
+                    </div>
+                    <div class="mock-total-hero">
+                        <div class="mock-total-label">Total Impact</div>
+                        <div class="mock-total-value">+$287K</div>
+                        <div class="mock-total-annual">Projected Annual: +$344K</div>
+                    </div>
+                    <div class="before-action-buttons">
+                        <button class="before-btn">Show Breakdown</button>
+                        <button class="before-btn-secondary">Save/Share Link</button>
+                        <button class="before-btn-danger">Clear Saved Data</button>
+                    </div>
+                    <div class="before-breakdown">
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Productivity</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = -((Cost/Item End − Cost/Item Start) × Items/Month × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">Cost per Item (Start)</span><span class="before-detail-value">$2,400</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Cost per Item (End)</span><span class="before-detail-value">$1,900</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Change per Item</span><span class="before-detail-value">−$500</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Items per Month</span><span class="before-detail-value">22</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period (months)</span><span class="before-detail-value">11</span></div>
+                        </div>
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Time-to-Market</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = −(ΔLead Time × Daily Cost End × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">Lead Time Change</span><span class="before-detail-value">−4 days</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Daily Cost (End)</span><span class="before-detail-value">$2,024</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period (months)</span><span class="before-detail-value">11</span></div>
+                        </div>
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Efficiency (WIP)</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = −(ΔWIP × Cost/Item × 2% × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">WIP Change</span><span class="before-detail-value">−8 items</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Cost per Item</span><span class="before-detail-value">$1,900</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period (months)</span><span class="before-detail-value">11</span></div>
+                        </div>
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Quality</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = −(ΔDefects × Cost/Item × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">Defect Change</span><span class="before-detail-value">−3/month</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Cost per Item</span><span class="before-detail-value">$1,900</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period (months)</span><span class="before-detail-value">11</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mockup-after visible" id="a-after">
+                <div class="mock-summary">
+                    <div class="mock-section-title">Financial Impact</div>
+                    <div class="mock-dim-rows">
+                        <div class="mock-dim-row"><span class="mock-dim-label">Productivity</span><span class="mock-dim-value">+$124K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Time-to-Market</span><span class="mock-dim-value">+$89K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Efficiency</span><span class="mock-dim-value">+$43K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Quality</span><span class="mock-dim-value">+$31K</span></div>
+                    </div>
+                    <div class="mock-total-hero">
+                        <div class="mock-total-label">Total Impact</div>
+                        <div class="mock-total-value">+$287K</div>
+                        <div class="mock-total-annual">Projected Annual: +$344K</div>
+                    </div>
+                    <div class="a-action-buttons">
+                        <button class="a-btn">Show Breakdown</button>
+                        <button class="a-btn-secondary">Save/Share Link</button>
+                        <button class="a-btn-danger">Clear Saved Data</button>
+                    </div>
+                    <div class="a-breakdown">
+                        <div class="a-bd-section">
+                            <div class="a-bd-header">Productivity</div>
+                            <div class="a-formula"><div class="a-formula-title">Formula</div><div class="a-formula-text">Impact = -((Cost/Item End − Cost/Item Start) × Items/Month × Months)</div></div>
+                            <div class="a-detail"><span class="a-detail-label">Cost per Item (Start)</span><span class="a-detail-value">$2,400</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Cost per Item (End)</span><span class="a-detail-value">$1,900</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Change per Item</span><span class="a-detail-value">−$500</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Items per Month</span><span class="a-detail-value">22</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Period (months)</span><span class="a-detail-value">11</span></div>
+                        </div>
+                        <div class="a-bd-section">
+                            <div class="a-bd-header">Time-to-Market</div>
+                            <div class="a-formula"><div class="a-formula-title">Formula</div><div class="a-formula-text">Impact = −(ΔLead Time × Daily Cost End × Months)</div></div>
+                            <div class="a-detail"><span class="a-detail-label">Lead Time Change</span><span class="a-detail-value">−4 days</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Daily Cost (End)</span><span class="a-detail-value">$2,024</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Period (months)</span><span class="a-detail-value">11</span></div>
+                        </div>
+                        <div class="a-bd-section">
+                            <div class="a-bd-header">Efficiency (WIP)</div>
+                            <div class="a-formula"><div class="a-formula-title">Formula</div><div class="a-formula-text">Impact = −(ΔWIP × Cost/Item × 2% × Months)</div></div>
+                            <div class="a-detail"><span class="a-detail-label">WIP Change</span><span class="a-detail-value">−8 items</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Cost per Item</span><span class="a-detail-value">$1,900</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Period (months)</span><span class="a-detail-value">11</span></div>
+                        </div>
+                        <div class="a-bd-section">
+                            <div class="a-bd-header">Quality</div>
+                            <div class="a-formula"><div class="a-formula-title">Formula</div><div class="a-formula-text">Impact = −(ΔDefects × Cost/Item × Months)</div></div>
+                            <div class="a-detail"><span class="a-detail-label">Defect Change</span><span class="a-detail-value">−3/month</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Cost per Item</span><span class="a-detail-value">$1,900</span></div>
+                            <div class="a-detail"><span class="a-detail-label">Period (months)</span><span class="a-detail-value">11</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="badge-row">
+            <span class="badge badge-fix">radius 12px → 4px</span>
+            <span class="badge badge-remove">no translateY lift</span>
+            <span class="badge badge-remove">no glass bg on secondary</span>
+            <span class="badge badge-fix">danger = text-link</span>
+            <span class="badge badge-remove">no nested section cards</span>
+            <span class="badge badge-fix">opacity-only animation</span>
+        </div>
+        <div class="annotation"><strong>Best for:</strong> Lowest risk, smallest diff. Fixes all 3 Impeccable violations (lift animation, nested cards, radius inconsistency) without changing the visual language. Production-ready in 30 min.</div>
+    </div>
+
+    <!-- ===== APPROACH B ===== -->
+    <div class="approach-panel" id="panel-b">
+        <div class="approach-meta">
+            <div class="meta-card">
+                <h3>Philosophy</h3>
+                <p>Financial instrument controls feel precision-machined. Hard edges, monospace labels. Tabs replace 4 stacked repetitive cards — one dimension at a time.</p>
+            </div>
+            <div class="meta-card">
+                <h3>Key Changes</h3>
+                <ul class="change-list">
+                    <li>All buttons: 0px radius, monospace ALL CAPS</li>
+                    <li>Secondary + danger: border-only (consistent pair)</li>
+                    <li>No translateY lift anywhere</li>
+                    <li>Breakdown: 4 tabs instead of 4 stacked cards</li>
+                    <li>Active tab = yellow underline, not background fill</li>
+                    <li>No nested cards anywhere</li>
+                </ul>
+            </div>
+        </div>
+        <div class="toggle-bar">
+            <button class="toggle-btn" data-state="before" data-target="b">Before</button>
+            <button class="toggle-btn active" data-state="after" data-target="b">After</button>
+            <span class="mockup-label" id="b-label">Showing: After</span>
+        </div>
+        <div class="mockup-shell">
+            <div class="mockup-before" id="b-before">
+                <div class="mock-summary">
+                    <div class="mock-section-title">Financial Impact</div>
+                    <div class="mock-dim-rows">
+                        <div class="mock-dim-row"><span class="mock-dim-label">Productivity</span><span class="mock-dim-value">+$124K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Time-to-Market</span><span class="mock-dim-value">+$89K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Efficiency</span><span class="mock-dim-value">+$43K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Quality</span><span class="mock-dim-value">+$31K</span></div>
+                    </div>
+                    <div class="mock-total-hero">
+                        <div class="mock-total-label">Total Impact</div>
+                        <div class="mock-total-value">+$287K</div>
+                        <div class="mock-total-annual">Projected Annual: +$344K</div>
+                    </div>
+                    <div class="before-action-buttons">
+                        <button class="before-btn">Show Breakdown</button>
+                        <button class="before-btn-secondary">Save/Share Link</button>
+                        <button class="before-btn-danger">Clear Saved Data</button>
+                    </div>
+                    <div class="before-breakdown">
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Productivity</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = -((Cost/Item End − Cost/Item Start) × Items/Month × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">Cost per Item (Start)</span><span class="before-detail-value">$2,400</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Cost per Item (End)</span><span class="before-detail-value">$1,900</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period (months)</span><span class="before-detail-value">11</span></div>
+                        </div>
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Time-to-Market</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = −(ΔLead Time × Daily Cost End × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">Lead Time Change</span><span class="before-detail-value">−4 days</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Daily Cost (End)</span><span class="before-detail-value">$2,024</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period (months)</span><span class="before-detail-value">11</span></div>
+                        </div>
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Efficiency (WIP)</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = −(ΔWIP × Cost/Item × 2% × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">WIP Change</span><span class="before-detail-value">−8 items</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period (months)</span><span class="before-detail-value">11</span></div>
+                        </div>
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Quality</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = −(ΔDefects × Cost/Item × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">Defect Change</span><span class="before-detail-value">−3/month</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period (months)</span><span class="before-detail-value">11</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mockup-after visible" id="b-after">
+                <div class="mock-summary">
+                    <div class="mock-section-title">Financial Impact</div>
+                    <div class="mock-dim-rows">
+                        <div class="mock-dim-row"><span class="mock-dim-label">Productivity</span><span class="mock-dim-value">+$124K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Time-to-Market</span><span class="mock-dim-value">+$89K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Efficiency</span><span class="mock-dim-value">+$43K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Quality</span><span class="mock-dim-value">+$31K</span></div>
+                    </div>
+                    <div class="mock-total-hero">
+                        <div class="mock-total-label">Total Impact</div>
+                        <div class="mock-total-value">+$287K</div>
+                        <div class="mock-total-annual">Projected Annual: +$344K</div>
+                    </div>
+                    <div class="b-action-buttons">
+                        <button class="b-btn">SHOW BREAKDOWN</button>
+                        <button class="b-btn-secondary">SAVE / SHARE</button>
+                        <button class="b-btn-danger">CLEAR DATA</button>
+                    </div>
+                    <div class="b-tabs-wrap">
+                        <div class="b-tabs" id="b-tabs">
+                            <div class="b-tab active" data-bpanel="prod">PRODUCTIVITY</div>
+                            <div class="b-tab" data-bpanel="ttm">TIME-TO-MARKET</div>
+                            <div class="b-tab" data-bpanel="eff">EFFICIENCY</div>
+                            <div class="b-tab" data-bpanel="qual">QUALITY</div>
+                        </div>
+                        <div class="b-panel active" id="b-panel-prod">
+                            <div class="b-formula"><div class="b-formula-title">Formula</div><div class="b-formula-text">Impact = -((Cost/Item End − Cost/Item Start) × Items/Month × Months)</div></div>
+                            <div class="b-detail"><span class="b-detail-label">Cost per Item (Start)</span><span class="b-detail-value">$2,400</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Cost per Item (End)</span><span class="b-detail-value">$1,900</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Change per Item</span><span class="b-detail-value">−$500</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Items per Month</span><span class="b-detail-value">22</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Period (months)</span><span class="b-detail-value">11</span></div>
+                        </div>
+                        <div class="b-panel" id="b-panel-ttm">
+                            <div class="b-formula"><div class="b-formula-title">Formula</div><div class="b-formula-text">Impact = −(ΔLead Time × Daily Cost End × Months)</div></div>
+                            <div class="b-detail"><span class="b-detail-label">Lead Time Change</span><span class="b-detail-value">−4 days</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Daily Cost (End)</span><span class="b-detail-value">$2,024</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Period (months)</span><span class="b-detail-value">11</span></div>
+                        </div>
+                        <div class="b-panel" id="b-panel-eff">
+                            <div class="b-formula"><div class="b-formula-title">Formula</div><div class="b-formula-text">Impact = −(ΔWIP × Cost/Item × 2% × Months)</div></div>
+                            <div class="b-detail"><span class="b-detail-label">WIP Change</span><span class="b-detail-value">−8 items</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Cost per Item</span><span class="b-detail-value">$1,900</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Carrying Rate</span><span class="b-detail-value">2.0%/mo</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Period (months)</span><span class="b-detail-value">11</span></div>
+                        </div>
+                        <div class="b-panel" id="b-panel-qual">
+                            <div class="b-formula"><div class="b-formula-title">Formula</div><div class="b-formula-text">Impact = −(ΔDefects × Cost/Item × Months)</div></div>
+                            <div class="b-detail"><span class="b-detail-label">Defect Change</span><span class="b-detail-value">−3/month</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Cost per Item</span><span class="b-detail-value">$1,900</span></div>
+                            <div class="b-detail"><span class="b-detail-label">Period (months)</span><span class="b-detail-value">11</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="badge-row">
+            <span class="badge badge-fix">0px radius — instrument style</span>
+            <span class="badge badge-fix">monospace ALL CAPS</span>
+            <span class="badge badge-remove">4 stacked cards → 4 tabs</span>
+            <span class="badge badge-new">active tab = yellow underline</span>
+            <span class="badge badge-remove">no translateY lift</span>
+            <span class="badge badge-remove">no nested cards</span>
+        </div>
+        <div class="annotation"><strong>Best for:</strong> The most distinctive of the 3. Tabs solve the biggest UX problem — 4 identical stacked cards require heavy scrolling. One tab = one focus. Square buttons reinforce the instrument-panel identity from the header.</div>
+    </div>
+
+    <!-- ===== APPROACH C ===== -->
+    <div class="approach-panel" id="panel-c">
+        <div class="approach-meta">
+            <div class="meta-card">
+                <h3>Philosophy</h3>
+                <p>Buttons that reveal information shouldn't look like primary CTAs. Minimize the button surface area — let the data lead, not the chrome.</p>
+            </div>
+            <div class="meta-card">
+                <h3>Key Changes</h3>
+                <ul class="change-list">
+                    <li>"Show Breakdown" → inline disclosure row (▼ text, no button box)</li>
+                    <li>"Save/Share" → icon button in the section header</li>
+                    <li>"Clear Data" → two-step confirm (try clicking it)</li>
+                    <li>Zero standalone action-button row</li>
+                    <li>Breakdown: 2×2 grid instead of 4 stacked cards</li>
+                    <li>Formula collapsed per-quadrant by default</li>
+                </ul>
+            </div>
+        </div>
+        <div class="toggle-bar">
+            <button class="toggle-btn" data-state="before" data-target="c">Before</button>
+            <button class="toggle-btn active" data-state="after" data-target="c">After</button>
+            <span class="mockup-label" id="c-label">Showing: After</span>
+        </div>
+        <div class="mockup-shell">
+            <div class="mockup-before" id="c-before">
+                <div class="mock-summary">
+                    <div class="mock-section-title">Financial Impact</div>
+                    <div class="mock-dim-rows">
+                        <div class="mock-dim-row"><span class="mock-dim-label">Productivity</span><span class="mock-dim-value">+$124K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Time-to-Market</span><span class="mock-dim-value">+$89K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Efficiency</span><span class="mock-dim-value">+$43K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Quality</span><span class="mock-dim-value">+$31K</span></div>
+                    </div>
+                    <div class="mock-total-hero">
+                        <div class="mock-total-label">Total Impact</div>
+                        <div class="mock-total-value">+$287K</div>
+                        <div class="mock-total-annual">Projected Annual: +$344K</div>
+                    </div>
+                    <div class="before-action-buttons">
+                        <button class="before-btn">Show Breakdown</button>
+                        <button class="before-btn-secondary">Save/Share Link</button>
+                        <button class="before-btn-danger">Clear Saved Data</button>
+                    </div>
+                    <div class="before-breakdown">
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Productivity</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = -((Cost/Item End − Cost/Item Start) × Items/Month × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">Cost per Item (Start)</span><span class="before-detail-value">$2,400</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Cost per Item (End)</span><span class="before-detail-value">$1,900</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period</span><span class="before-detail-value">11 mo</span></div>
+                        </div>
+                        <div class="before-bd-section">
+                            <div class="before-bd-header">Time-to-Market</div>
+                            <div class="before-formula"><div class="before-formula-title">Formula</div><div class="before-formula-text">Impact = −(ΔLead Time × Daily Cost End × Months)</div></div>
+                            <div class="before-detail"><span class="before-detail-label">Lead Time Change</span><span class="before-detail-value">−4 days</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Daily Cost (End)</span><span class="before-detail-value">$2,024</span></div>
+                            <div class="before-detail"><span class="before-detail-label">Period</span><span class="before-detail-value">11 mo</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mockup-after visible" id="c-after">
+                <div class="mock-summary">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:0.625rem;border-bottom:1px solid rgba(255,255,255,0.15);">
+                        <span style="font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.9);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.08em;">Financial Impact</span>
+                        <button class="c-icon-btn" title="Save/Share Link">
+                            <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                        </button>
+                    </div>
+                    <div class="mock-dim-rows">
+                        <div class="mock-dim-row"><span class="mock-dim-label">Productivity</span><span class="mock-dim-value">+$124K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Time-to-Market</span><span class="mock-dim-value">+$89K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Efficiency</span><span class="mock-dim-value">+$43K</span></div>
+                        <div class="mock-dim-row"><span class="mock-dim-label">Quality</span><span class="mock-dim-value">+$31K</span></div>
+                    </div>
+                    <div class="mock-total-hero">
+                        <div class="mock-total-label">Total Impact</div>
+                        <div class="mock-total-value">+$287K</div>
+                        <div class="mock-total-annual">Projected Annual: +$344K</div>
+                    </div>
+                    <div class="c-disclosure" id="c-disc">
+                        <span class="c-chevron open" id="c-chevron">▼</span>
+                        <span>Calculation Details</span>
+                        <span class="c-clear-btn" id="c-clear">Clear saved data</span>
+                    </div>
+                    <div class="c-grid">
+                        <div class="c-quadrant">
+                            <div class="c-q-header">Productivity</div>
+                            <div class="c-formula-toggle">[formula ▼]</div>
+                            <div class="c-detail"><span class="c-detail-label">Cost/Item (Start)</span><span class="c-detail-value">$2,400</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Cost/Item (End)</span><span class="c-detail-value">$1,900</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Change/Item</span><span class="c-detail-value">−$500</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Items/Month</span><span class="c-detail-value">22</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Period</span><span class="c-detail-value">11 mo</span></div>
+                        </div>
+                        <div class="c-quadrant" style="border-left:1px solid rgba(255,255,255,0.08);">
+                            <div class="c-q-header">Time-to-Market</div>
+                            <div class="c-formula-toggle">[formula ▼]</div>
+                            <div class="c-detail"><span class="c-detail-label">Lead Time Δ</span><span class="c-detail-value">−4 days</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Daily Cost (End)</span><span class="c-detail-value">$2,024</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Period</span><span class="c-detail-value">11 mo</span></div>
+                        </div>
+                        <div class="c-quadrant" style="border-top:1px solid rgba(255,255,255,0.08);">
+                            <div class="c-q-header">Efficiency</div>
+                            <div class="c-formula-toggle">[formula ▼]</div>
+                            <div class="c-detail"><span class="c-detail-label">WIP Δ</span><span class="c-detail-value">−8 items</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Cost/Item</span><span class="c-detail-value">$1,900</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Carrying Rate</span><span class="c-detail-value">2.0%/mo</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Period</span><span class="c-detail-value">11 mo</span></div>
+                        </div>
+                        <div class="c-quadrant" style="border-top:1px solid rgba(255,255,255,0.08);border-left:1px solid rgba(255,255,255,0.08);">
+                            <div class="c-q-header">Quality</div>
+                            <div class="c-formula-toggle">[formula ▼]</div>
+                            <div class="c-detail"><span class="c-detail-label">Defects Δ</span><span class="c-detail-value">−3/mo</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Cost/Item</span><span class="c-detail-value">$1,900</span></div>
+                            <div class="c-detail"><span class="c-detail-label">Period</span><span class="c-detail-value">11 mo</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="badge-row">
+            <span class="badge badge-remove">no action-button row</span>
+            <span class="badge badge-new">▼ disclosure row</span>
+            <span class="badge badge-new">save/share → header icon</span>
+            <span class="badge badge-new">clear = two-step confirm</span>
+            <span class="badge badge-new">2×2 breakdown grid</span>
+            <span class="badge badge-new">per-quadrant formula toggle</span>
+        </div>
+        <div class="annotation"><strong>Best for:</strong> Most architecturally clean. Eliminates the "find the button" problem entirely. 2×2 grid lets users compare all 4 dimensions at a glance. Highest effort to implement — but the most opinionated and differentiated.</div>
+    </div>
+
+</div>
+
+<script>
+    // Approach tab switching
+    document.querySelectorAll('.approach-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.approach-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.approach-panel').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('panel-' + this.dataset.panel).classList.add('active');
+        });
+    });
+
+    // Before/After toggle
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = this.dataset.target;
+            const state = this.dataset.state;
+            this.closest('.toggle-bar').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(target + '-label').textContent = 'Showing: ' + (state === 'before' ? 'Before' : 'After');
+            const shell = this.closest('.toggle-bar').nextElementSibling;
+            shell.querySelector('.mockup-before').classList.toggle('visible', state === 'before');
+            shell.querySelector('.mockup-after').classList.toggle('visible', state === 'after');
+        });
+    });
+
+    // Approach B — interactive tabs
+    document.querySelectorAll('.b-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const panel = this.dataset.bpanel;
+            this.closest('.b-tabs').querySelectorAll('.b-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.b-panel').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('b-panel-' + panel).classList.add('active');
+        });
+    });
+
+    // Approach C — clear data two-step confirm
+    const clearBtn = document.getElementById('c-clear');
+    if (clearBtn) {
+        let armed = false, resetTimer = null;
+        clearBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!armed) {
+                armed = true;
+                this.textContent = 'Confirm clear?';
+                this.style.color = 'rgba(255,149,0,0.95)';
+                this.style.fontWeight = '700';
+                resetTimer = setTimeout(() => {
+                    armed = false;
+                    this.textContent = 'Clear saved data';
+                    this.style.color = '';
+                    this.style.fontWeight = '';
+                }, 3000);
+            } else {
+                clearTimeout(resetTimer);
+                armed = false;
+                this.textContent = '✓ Cleared';
+                this.style.color = 'rgba(120,210,150,0.9)';
+                this.style.fontWeight = '';
+                setTimeout(() => {
+                    this.textContent = 'Clear saved data';
+                    this.style.color = '';
+                }, 1800);
+            }
+        });
+    }
+</script>
+</body>
+</html>
