@@ -553,60 +553,64 @@
         .btn {
             background: var(--yellow);
             color: var(--green-dark);
-            border: none;
-            padding: 0.875rem 1.5rem;
-            border-radius: 12px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 0.875rem;
-            font-weight: 600;
+            border: 1px solid var(--yellow);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
-            text-transform: none;
-            letter-spacing: 0;
+            transition: background 0.15s, border-color 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .btn:hover {
             background: var(--yellow-dim);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
+            border-color: var(--yellow-dim);
         }
 
         .btn:active {
-            transform: translateY(0);
+            background: var(--yellow-dim);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 0.875rem 1.5rem;
-            border-radius: 12px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 0.875rem;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.15s, border-color 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: white;
         }
 
         .btn-danger {
             background: transparent;
             color: rgba(255, 149, 0, 0.9);
-            border: 1px solid rgba(255, 149, 0, 0.5);
-            padding: 0.875rem 1.5rem;
-            border-radius: 12px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 0.875rem;
+            border: 1px solid rgba(255, 149, 0, 0.6);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .btn-danger:hover {
-            background: rgba(255, 149, 0, 0.1);
+            background: rgba(255, 149, 0, 0.08);
         }
 
         /* Breakdown */
@@ -623,25 +627,49 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; }
+            to   { opacity: 1; }
         }
 
-        .breakdown-section {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+        .breakdown-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 1.25rem;
+            overflow-x: auto;
         }
 
-        .breakdown-section:last-child {
-            margin-bottom: 0;
+        .breakdown-tab {
+            padding: 0.625rem 1rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.625rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 0.15s, border-color 0.15s;
+        }
+
+        .breakdown-tab:hover {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .breakdown-tab.active {
+            color: var(--yellow);
+            border-bottom-color: var(--yellow);
+        }
+
+        .breakdown-panel {
+            display: none;
+        }
+
+        .breakdown-panel.active {
+            display: block;
         }
 
         .breakdown-header {
@@ -1111,7 +1139,14 @@
 
             <!-- Breakdown -->
             <div class="breakdown" id="breakdown">
-                <div class="breakdown-section">
+                <div class="breakdown-tabs">
+                    <button class="breakdown-tab active" data-panel="prod">PRODUCTIVITY</button>
+                    <button class="breakdown-tab" data-panel="ttm">TIME-TO-MARKET</button>
+                    <button class="breakdown-tab" data-panel="eff">EFFICIENCY</button>
+                    <button class="breakdown-tab" data-panel="qual">QUALITY</button>
+                </div>
+
+                <div class="breakdown-panel active" id="breakdown-prod">
                     <h3 class="breakdown-header">Productivity</h3>
                     <div class="breakdown-formula">
                         <div class="breakdown-formula-title">Formula</div>
@@ -1144,7 +1179,7 @@
                     </div>
                 </div>
 
-                <div class="breakdown-section">
+                <div class="breakdown-panel" id="breakdown-ttm">
                     <h3 class="breakdown-header">Time-to-Market</h3>
                     <div class="breakdown-formula">
                         <div class="breakdown-formula-title">Formula</div>
@@ -1169,7 +1204,7 @@
                     </div>
                 </div>
 
-                <div class="breakdown-section">
+                <div class="breakdown-panel" id="breakdown-eff">
                     <h3 class="breakdown-header">Efficiency (WIP)</h3>
                     <div class="breakdown-formula">
                         <div class="breakdown-formula-title">Formula</div>
@@ -1198,7 +1233,7 @@
                     </div>
                 </div>
 
-                <div class="breakdown-section">
+                <div class="breakdown-panel" id="breakdown-qual">
                     <h3 class="breakdown-header">Quality</h3>
                     <div class="breakdown-formula">
                         <div class="breakdown-formula-title">Formula</div>
@@ -1762,7 +1797,17 @@
         document.getElementById('toggleBreakdown').addEventListener('click', function() {
             const breakdown = document.getElementById('breakdown');
             breakdown.classList.toggle('visible');
-            this.textContent = breakdown.classList.contains('visible') ? 'Hide Breakdown' : 'Show Breakdown';
+            this.textContent = breakdown.classList.contains('visible') ? 'HIDE BREAKDOWN' : 'SHOW BREAKDOWN';
+        });
+
+        // Breakdown tab switching
+        document.querySelectorAll('.breakdown-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.breakdown-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.breakdown-panel').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('breakdown-' + this.dataset.panel).classList.add('active');
+            });
         });
 
         // Save/Share link button
