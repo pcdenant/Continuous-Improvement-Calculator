@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Pierre-Cyril Denant">
     <title>Continuous Improvement Financial Impact Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --cream: #FBF3EB;
@@ -15,10 +15,10 @@
             --yellow: #FFF200;
             --yellow-dim: #E6DB00;
             --text-primary: #1a1a1a;
-            --text-secondary: #4a4a4a;
-            --text-muted: #7a7a7a;
+            --text-secondary: #3d4a41;
+            --text-muted: #5a7060;
             --surface: #ffffff;
-            --border: #e5e5e5;
+            --border: #c5d5c9;
             --danger: #dc2626;
             --success: var(--green);
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -49,12 +49,13 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--cream);
             color: var(--text-primary);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
         }
 
         .container {
@@ -63,27 +64,49 @@
             padding: 2rem 1.5rem;
         }
 
-        /* Header */
+        /* Header — dark authority band, bleeds past container padding */
         header {
             margin-bottom: 2.5rem;
+            margin-left: -1.5rem;
+            margin-right: -1.5rem;
+            padding: 2rem 1.5rem;
+            background: #004d32;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             flex-wrap: wrap;
             gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Crosshatch instrument-panel overlay — visible only when looking for it */
+        header::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+        }
+
+        [data-theme="dark"] header {
+            background: #002218;
         }
 
         .header-content h1 {
             font-size: clamp(1.75rem, 4vw, 2.5rem);
             font-weight: 700;
-            color: var(--green);
+            color: var(--yellow);
             margin-bottom: 0.5rem;
             letter-spacing: -0.02em;
         }
 
         .subtitle {
             font-size: 1rem;
-            color: var(--text-secondary);
+            color: rgba(255, 255, 255, 0.7);
             font-weight: 400;
         }
 
@@ -100,28 +123,29 @@
             min-width: 44px;
             height: 44px;
             padding: 0 0.625rem;
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             border-radius: 10px;
             cursor: pointer;
             font-size: 1rem;
             font-family: 'JetBrains Mono', monospace;
             font-weight: 600;
-            color: var(--text-secondary);
-            box-shadow: var(--shadow-sm);
+            color: rgba(255, 255, 255, 0.85);
+            box-shadow: none;
             transition: all 0.2s;
         }
 
         .icon-btn:hover {
-            box-shadow: var(--shadow-md);
-            border-color: var(--green);
-            color: var(--green);
+            background: rgba(255, 255, 255, 0.18);
+            border-color: var(--yellow);
+            color: var(--yellow);
+            box-shadow: none;
         }
 
         .icon-btn.active {
-            background: var(--green);
-            color: white;
-            border-color: var(--green);
+            background: var(--yellow);
+            color: var(--green-dark);
+            border-color: var(--yellow);
         }
 
         /* Bento Grid Layout */
@@ -134,7 +158,7 @@
 
         .bento-item {
             background: var(--surface);
-            border-radius: 20px;
+            border-radius: 8px;
             padding: 1.75rem;
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border);
@@ -149,7 +173,7 @@
         .economics { grid-column: span 4; }
         .period { grid-column: span 3; }
         .metrics { grid-column: span 5; }
-        .summary { grid-column: span 12; background: linear-gradient(135deg, #006946 0%, #008857 100%); color: white; }
+        .summary { grid-column: span 12; background: #004d32; color: white; }
 
         .section-title {
             font-size: 0.8125rem;
@@ -159,10 +183,13 @@
             margin-bottom: 1.5rem;
             font-weight: 600;
             font-family: 'JetBrains Mono', monospace;
+            padding-bottom: 0.625rem;
+            border-bottom: 1px solid var(--border);
         }
 
         .summary .section-title {
             color: var(--yellow);
+            border-bottom-color: rgba(255, 255, 255, 0.15);
         }
 
         /* Form Elements */
@@ -221,7 +248,7 @@
             border: 1px solid var(--border);
             color: var(--text-primary);
             padding: 0.75rem 1rem;
-            border-radius: 12px;
+            border-radius: 4px;
             font-size: 0.9375rem;
             font-family: 'JetBrains Mono', monospace;
             transition: all 0.2s;
@@ -249,46 +276,62 @@
             gap: 0.75rem;
         }
 
-        /* Summary Section */
+        /* Summary Section — V3 dim-row layout */
         .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .summary-item {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s;
-        }
-
-        .summary-item:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .summary-item.positive {
-            border-color: var(--yellow);
-        }
-
-        .summary-item.negative {
-            border-color: rgba(255, 149, 0, 0.5);
-        }
-
-        .summary-label {
-            font-size: 0.8125rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 0;
+            margin-bottom: 0;
+        }
+
+        .dim-row {
+            display: flex;
             align-items: center;
-            font-weight: 500;
+            justify-content: space-between;
+            padding: 0.875rem 1rem;
+            border-left: 3px solid rgba(255, 255, 255, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            transition: background 0.18s ease, border-left-color 0.18s ease;
+        }
+
+        .dim-row:last-child {
+            border-bottom: none;
+        }
+
+        .dim-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: var(--yellow);
+        }
+
+        .dim-row.negative {
+            border-left-color: rgba(255, 149, 0, 0.4);
+        }
+
+        .dim-row-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .dim-row-label {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .dim-row-annual {
+            font-size: 0.6875rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .dim-row-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-align: right;
         }
 
         .tooltip-trigger {
@@ -353,16 +396,22 @@
             max-width: calc(100vw - 2rem);
             box-shadow: var(--shadow-lg);
             z-index: 200;
-            display: none;
             font-size: 0.8125rem;
             line-height: 1.6;
             text-transform: none;
             letter-spacing: normal;
             color: var(--text-primary);
+            /* Fade+slide instead of instant display toggle */
+            opacity: 0;
+            transform: translateY(4px);
+            pointer-events: none;
+            transition: opacity 0.18s ease, transform 0.18s ease;
         }
 
         .tooltip-trigger.open .tooltip-content {
-            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
         }
 
         .tooltip-title {
@@ -401,24 +450,29 @@
 
         .summary-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 2rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 0.5rem;
+            display: inline-block;
         }
 
-        .summary-value.positive {
-            color: white;
+        /* Pulse animation when dim value updates */
+        @keyframes dim-pulse {
+            0%   { opacity: 1; transform: scale(1); }
+            30%  { opacity: 0.6; transform: scale(0.96); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
-        .summary-value.negative {
-            color: white;
+        .summary-value.pulsing {
+            animation: dim-pulse 0.35s ease-out forwards;
         }
 
         .summary-improvement {
             font-size: 0.8125rem;
             font-family: 'JetBrains Mono', monospace;
             font-weight: 600;
+            min-width: 4.5rem;
+            text-align: right;
         }
 
         .summary-improvement.positive {
@@ -426,23 +480,57 @@
         }
 
         .summary-improvement.negative {
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 149, 0, 0.9);
         }
 
+        /* summary-period hidden — annual text lives in .dim-row-annual */
         .summary-period {
-            font-size: 0.8125rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 0.4rem;
+            display: none;
         }
 
-        .total-line {
-            border-top: 2px solid rgba(255, 255, 255, 0.2);
-            padding-top: 1.5rem;
-            margin-top: 1.5rem;
+        /* Hero total block */
+        .total-hero {
+            text-align: center;
+            padding: 2rem 1.5rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            margin-top: 1rem;
+            transition: box-shadow 0.4s ease;
         }
 
-        .total-value {
-            font-size: 2.5rem;
+        .total-hero-label {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .total-hero-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(2.5rem, 6vw, 3.75rem);
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .total-hero-annual {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Gold glow — fires once when all 4 dimensions are positive */
+        @keyframes gold-glow-pulse {
+            0%   { box-shadow: 0 0 0 0 rgba(255, 242, 0, 0); }
+            40%  { box-shadow: 0 0 28px 8px rgba(255, 242, 0, 0.22); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 242, 0, 0); }
+        }
+
+        .total-hero.glow {
+            animation: gold-glow-pulse 0.9s ease-out forwards;
         }
 
         /* Buttons */
@@ -468,7 +556,7 @@
             border: none;
             padding: 0.875rem 1.5rem;
             border-radius: 12px;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
@@ -493,7 +581,7 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 0.875rem 1.5rem;
             border-radius: 12px;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
@@ -510,7 +598,7 @@
             border: 1px solid rgba(255, 149, 0, 0.5);
             padding: 0.875rem 1.5rem;
             border-radius: 12px;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
@@ -657,7 +745,7 @@
             color: white;
             padding: 1rem 1.5rem;
             border-radius: 12px;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 0.875rem;
             font-weight: 600;
             opacity: 0;
@@ -721,16 +809,12 @@
                 grid-column: span 1;
             }
 
-            .summary-grid {
-                grid-template-columns: 1fr;
-            }
-
             .summary-value {
-                font-size: 1.5rem;
+                font-size: 1.1rem;
             }
 
-            .total-value {
-                font-size: 2rem;
+            .total-hero-value {
+                font-size: clamp(2rem, 10vw, 3rem);
             }
 
             header {
@@ -914,93 +998,109 @@
         <!-- Summary -->
         <div class="bento-item summary">
             <h2 class="section-title" id="summaryTitle">Period Savings Summary</h2>
+
             <div class="summary-grid">
-                <div class="summary-item" id="productivityItem">
-                    <div class="summary-label">
-                        <span class="tooltip-trigger">
-                            <span>Productivity</span>
-                            <span class="tooltip-icon">?</span>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">Why this number moves</div>
-                                <div class="tooltip-text">Lower cost-per-item means the same output with fewer resources. That's margin improvement.</div>
-                                <div class="tooltip-blockers">
-                                    <div class="tooltip-blockers-title">Blockers</div>
-                                    <div class="tooltip-blockers-list">• Tech debt slowing throughput<br>• Skill gaps in the team<br>• Too much WIP causing context-switching overhead</div>
+                <div class="dim-row" id="productivityItem">
+                    <div class="dim-row-left">
+                        <div class="dim-row-label">
+                            <span class="tooltip-trigger">
+                                <span>Productivity</span>
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <div class="tooltip-title">Why this number moves</div>
+                                    <div class="tooltip-text">Lower cost-per-item means the same output with fewer resources. That's margin improvement.</div>
+                                    <div class="tooltip-blockers">
+                                        <div class="tooltip-blockers-title">Blockers</div>
+                                        <div class="tooltip-blockers-list">• Tech debt slowing throughput<br>• Skill gaps in the team<br>• Too much WIP causing context-switching overhead</div>
+                                    </div>
                                 </div>
-                            </div>
-                        </span>
+                            </span>
+                        </div>
+                        <div class="dim-row-annual" id="productivityAnnual">Projected Annual: 0$</div>
+                    </div>
+                    <div class="dim-row-right">
+                        <span class="summary-value" id="productivityPeriod">0$</span>
                         <span class="summary-improvement" id="productivityImprovement">0%</span>
                     </div>
-                    <div class="summary-value" id="productivityPeriod">0$</div>
-                    <div class="summary-period" id="productivityAnnual">Projected Annual: 0$</div>
                 </div>
-                <div class="summary-item" id="timeToMarketItem">
-                    <div class="summary-label">
-                        <span class="tooltip-trigger">
-                            <span>Time-to-Market</span>
-                            <span class="tooltip-icon">?</span>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">Why this number moves</div>
-                                <div class="tooltip-text">Each day saved is earlier revenue. Multiplied across throughput volume, the impact compounds fast.</div>
-                                <div class="tooltip-blockers">
-                                    <div class="tooltip-blockers-title">Blockers</div>
-                                    <div class="tooltip-blockers-list">• Approval bottlenecks<br>• Cross-team dependencies<br>• Over-engineering / gold-plating</div>
+
+                <div class="dim-row" id="timeToMarketItem">
+                    <div class="dim-row-left">
+                        <div class="dim-row-label">
+                            <span class="tooltip-trigger">
+                                <span>Time-to-Market</span>
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <div class="tooltip-title">Why this number moves</div>
+                                    <div class="tooltip-text">Each day saved is earlier revenue. Multiplied across throughput volume, the impact compounds fast.</div>
+                                    <div class="tooltip-blockers">
+                                        <div class="tooltip-blockers-title">Blockers</div>
+                                        <div class="tooltip-blockers-list">• Approval bottlenecks<br>• Cross-team dependencies<br>• Over-engineering / gold-plating</div>
+                                    </div>
                                 </div>
-                            </div>
-                        </span>
+                            </span>
+                        </div>
+                        <div class="dim-row-annual" id="timeToMarketAnnual">Projected Annual: 0$</div>
+                    </div>
+                    <div class="dim-row-right">
+                        <span class="summary-value" id="timeToMarketPeriod">0$</span>
                         <span class="summary-improvement" id="timeToMarketImprovement">0%</span>
                     </div>
-                    <div class="summary-value" id="timeToMarketPeriod">0$</div>
-                    <div class="summary-period" id="timeToMarketAnnual">Projected Annual: 0$</div>
                 </div>
-                <div class="summary-item" id="efficiencyItem">
-                    <div class="summary-label">
-                        <span class="tooltip-trigger">
-                            <span>Efficiency (WIP)</span>
-                            <span class="tooltip-icon">?</span>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">Why this number moves</div>
-                                <div class="tooltip-text">WIP is inventory. High WIP means carrying cost and delivery risk. Reducing it lowers financial exposure.</div>
-                                <div class="tooltip-blockers">
-                                    <div class="tooltip-blockers-title">Blockers</div>
-                                    <div class="tooltip-blockers-list">• No WIP limits: everyone starts, nobody finishes<br>• Invisible work not tracked (bugs, support, side requests)<br>• No mechanism to say no to new requests mid-sprint</div>
+
+                <div class="dim-row" id="efficiencyItem">
+                    <div class="dim-row-left">
+                        <div class="dim-row-label">
+                            <span class="tooltip-trigger">
+                                <span>Efficiency (WIP)</span>
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <div class="tooltip-title">Why this number moves</div>
+                                    <div class="tooltip-text">WIP is inventory. High WIP means carrying cost and delivery risk. Reducing it lowers financial exposure.</div>
+                                    <div class="tooltip-blockers">
+                                        <div class="tooltip-blockers-title">Blockers</div>
+                                        <div class="tooltip-blockers-list">• No WIP limits: everyone starts, nobody finishes<br>• Invisible work not tracked (bugs, support, side requests)<br>• No mechanism to say no to new requests mid-sprint</div>
+                                    </div>
                                 </div>
-                            </div>
-                        </span>
+                            </span>
+                        </div>
+                        <div class="dim-row-annual" id="efficiencyAnnual">Projected Annual: 0$</div>
+                    </div>
+                    <div class="dim-row-right">
+                        <span class="summary-value" id="efficiencyPeriod">0$</span>
                         <span class="summary-improvement" id="efficiencyImprovement">0%</span>
                     </div>
-                    <div class="summary-value" id="efficiencyPeriod">0$</div>
-                    <div class="summary-period" id="efficiencyAnnual">Projected Annual: 0$</div>
                 </div>
-                <div class="summary-item" id="qualityItem">
-                    <div class="summary-label">
-                        <span class="tooltip-trigger">
-                            <span>Quality</span>
-                            <span class="tooltip-icon">?</span>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">Why this number moves</div>
-                                <div class="tooltip-text">Every defect requires full remediation effort. Fewer defects means direct margin recovery.</div>
-                                <div class="tooltip-blockers">
-                                    <div class="tooltip-blockers-title">Blockers</div>
-                                    <div class="tooltip-blockers-list">• Rushing to meet deadlines<br>• Insufficient test coverage<br>• Poor Definition of Done</div>
+
+                <div class="dim-row" id="qualityItem">
+                    <div class="dim-row-left">
+                        <div class="dim-row-label">
+                            <span class="tooltip-trigger">
+                                <span>Quality</span>
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <div class="tooltip-title">Why this number moves</div>
+                                    <div class="tooltip-text">Every defect requires full remediation effort. Fewer defects means direct margin recovery.</div>
+                                    <div class="tooltip-blockers">
+                                        <div class="tooltip-blockers-title">Blockers</div>
+                                        <div class="tooltip-blockers-list">• Rushing to meet deadlines<br>• Insufficient test coverage<br>• Poor Definition of Done</div>
+                                    </div>
                                 </div>
-                            </div>
-                        </span>
+                            </span>
+                        </div>
+                        <div class="dim-row-annual" id="qualityAnnual">Projected Annual: 0$</div>
+                    </div>
+                    <div class="dim-row-right">
+                        <span class="summary-value" id="qualityPeriod">0$</span>
                         <span class="summary-improvement" id="qualityImprovement">0%</span>
                     </div>
-                    <div class="summary-value" id="qualityPeriod">0$</div>
-                    <div class="summary-period" id="qualityAnnual">Projected Annual: 0$</div>
                 </div>
             </div>
 
-            <div class="total-line">
-                <div class="summary-grid">
-                    <div class="summary-item" id="totalItem">
-                        <div class="summary-label">Total Impact</div>
-                        <div class="summary-value total-value" id="totalPeriod">0$</div>
-                        <div class="summary-period" id="totalAnnual">Projected Annual: 0$</div>
-                    </div>
-                </div>
+            <div class="total-hero" id="totalItem">
+                <div class="total-hero-label">Total Financial Impact</div>
+                <div class="total-hero-value" id="totalPeriod">0$</div>
+                <div class="total-hero-annual" id="totalAnnual">Projected Annual: 0$</div>
             </div>
 
             <div class="action-buttons">
@@ -1136,6 +1236,8 @@
         // Global settings
         let currencySymbol = '$';
         let saveTimer;
+        let currentTotal = 0;
+        let counterRafId = null;
         const SVG_SUN = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>`;
         const SVG_MOON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 
@@ -1533,6 +1635,50 @@
             updateImprovementStyle(document.getElementById(`${prefix}Improvement`), improvement);
         }
 
+        function animateCounter(targetValue) {
+            if (counterRafId) cancelAnimationFrame(counterRafId);
+            const el = document.getElementById('totalPeriod');
+            if (!el) return;
+            const start = currentTotal;
+            const delta = targetValue - start;
+            const duration = 420;
+            const startTime = performance.now();
+            function step(now) {
+                const elapsed = Math.min(now - startTime, duration);
+                const progress = elapsed / duration;
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = start + delta * eased;
+                el.textContent = formatCurrency(current);
+                if (elapsed < duration) {
+                    counterRafId = requestAnimationFrame(step);
+                } else {
+                    el.textContent = formatCurrency(targetValue);
+                    currentTotal = targetValue;
+                    counterRafId = null;
+                }
+            }
+            counterRafId = requestAnimationFrame(step);
+        }
+
+        function pulseDimValue(elId) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.classList.remove('pulsing');
+            void el.offsetWidth;
+            el.classList.add('pulsing');
+            el.addEventListener('animationend', () => el.classList.remove('pulsing'), { once: true });
+        }
+
+        function triggerGoldGlow(periods) {
+            const hero = document.getElementById('totalItem');
+            if (!hero) return;
+            if (!periods.every(v => v > 0)) return;
+            hero.classList.remove('glow');
+            void hero.offsetWidth;
+            hero.classList.add('glow');
+            hero.addEventListener('animationend', () => hero.classList.remove('glow'), { once: true });
+        }
+
         // Calculate and update
         function calculate() {
             updateSummaryTitle();
@@ -1581,10 +1727,15 @@
             updateDimensionDisplay('timeToMarket', ttm.period, ttm.annual, ttmImprovement);
             updateDimensionDisplay('efficiency', efficiency.period, efficiency.annual, wipImprovement);
             updateDimensionDisplay('quality', quality.period, quality.annual, qualityImprovement);
+            pulseDimValue('productivityPeriod');
+            pulseDimValue('timeToMarketPeriod');
+            pulseDimValue('efficiencyPeriod');
+            pulseDimValue('qualityPeriod');
 
-            document.getElementById('totalPeriod').textContent = formatCurrency(totalPeriod);
+            animateCounter(totalPeriod);
             document.getElementById('totalAnnual').textContent = `Projected Annual: ${formatCurrency(totalAnnual)}`;
             updateItemStyle(document.getElementById('totalItem'), totalPeriod);
+            triggerGoldGlow([productivity.period, ttm.period, efficiency.period, quality.period]);
 
             const changePerItem = costPerItemCurr - costPerItemPrev;
             document.getElementById('bd-lt-change').textContent = (leadTimeCurr - leadTimePrev).toFixed(0);
