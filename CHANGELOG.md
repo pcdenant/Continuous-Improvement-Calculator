@@ -4,6 +4,18 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.6] — 2026-07-02
+
+### Added — Disclosure (F12, RICE #1)
+
+* **Note de lecture "Reading note" sur Time-to-Market et Quality** : nouveau bloc dans le tooltip existant de ces deux dimensions, indiquant que Lead Time et Defects partagent le même flux non stratifié — un changement de mix de travail entre deux périodes peut déplacer la moyenne sans réel gain/perte de flux. Réutilise le pattern `.tooltip-blockers` existant (nouvelles classes `.tooltip-caveat` / `.tooltip-caveat-title` / `.tooltip-caveat-text`), aucun changement JS ni de formule.
+
+### Note
+
+* Zéro changement de comportement calculatoire — `calcTTM`/`calcQuality` inchangées, snapshot de régression (blendRate=100, h/d=8, équipe=5, mois=3) toujours valide.
+
+---
+
 ## [v2.5] — 2026-05-09
 
 ### Refactoring — Architecture JS

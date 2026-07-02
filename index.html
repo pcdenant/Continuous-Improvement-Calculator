@@ -448,6 +448,26 @@
             line-height: 1.5;
         }
 
+        .tooltip-caveat {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .tooltip-caveat-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+
+        .tooltip-caveat-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
         .summary-value {
             font-family: 'JetBrains Mono', monospace;
             font-size: 1.25rem;
@@ -1065,6 +1085,10 @@
                                         <div class="tooltip-blockers-title">Blockers</div>
                                         <div class="tooltip-blockers-list">• Approval bottlenecks<br>• Cross-team dependencies<br>• Over-engineering / gold-plating</div>
                                     </div>
+                                    <div class="tooltip-caveat">
+                                        <div class="tooltip-caveat-title">Reading note</div>
+                                        <div class="tooltip-caveat-text">Lead Time and Defects share the same unstratified flow — a shift in work mix (e.g. more rush items) between periods can move this number without a real change in delivery speed.</div>
+                                    </div>
                                 </div>
                             </span>
                         </div>
@@ -1112,6 +1136,10 @@
                                     <div class="tooltip-blockers">
                                         <div class="tooltip-blockers-title">Blockers</div>
                                         <div class="tooltip-blockers-list">• Rushing to meet deadlines<br>• Insufficient test coverage<br>• Poor Definition of Done</div>
+                                    </div>
+                                    <div class="tooltip-caveat">
+                                        <div class="tooltip-caveat-title">Reading note</div>
+                                        <div class="tooltip-caveat-text">Lead Time and Defects share the same unstratified flow — a shift in work mix (e.g. more rush items) between periods can move this number without a real change in defect rate.</div>
                                     </div>
                                 </div>
                             </span>
