@@ -4,6 +4,21 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.8] — 2026-07-03
+
+### Test — Formula-level regression suite (F4, RICE #5)
+
+* **`tests/formula-regression.js`** (nouveau, script Node pur, zéro dépendance, zéro navigateur) : extrait le vrai code source des 5 fonctions de calcul + `calculateMonths` depuis `index.html` (pas une réimplémentation à la main — élimine le risque de dérive silencieuse que ce ticket doit justement corriger) et vérifie 36 assertions : les 2 scénarios de baseline CLAUDE.md (valeurs exactes), le plancher de mois à 1 (G2), les entrées dérivées à zéro (division gardée en amont), `teamSizeStart === teamSizeEnd`, les signes négatifs, et la constante `CARRYING_RATE_MONTHLY`.
+* **`tests/ux-regression.js` — nouveau bloc `T19`** : vérifie que les valeurs ET le texte des formules affichés dans le panneau Breakdown correspondent exactement au calcul réel (risque de dérive distinct — ces écritures DOM sont séparées des 5 fonctions pures dans `calculate()`).
+* **CLAUDE.md — snapshot de régression complété** : les sections "v2.5" et "v2.7" étaient incomplètes (ne spécifiaient pas throughput/leadTime/WIP/defects, valeurs approximatives "≈"). Remplacées par deux scénarios A/B entièrement spécifiés, aux valeurs exactes, vérifiées par les deux suites de tests.
+
+### Note
+
+* Preuve que les deux suites ont des dents : un test de mutation (réintroduction du bug historique G1 dans `calcTTM`, puis désynchronisation d'une valeur `bd-*` du panneau Breakdown) confirme que chaque suite échoue bien sur le fichier muté et repasse au vert sur le fichier réel.
+* Zéro changement de comportement — uniquement des tests et de la documentation.
+
+---
+
 ## [v2.7] — 2026-07-03
 
 ### Added — Headcount Cost Saving (F5, RICE #2)

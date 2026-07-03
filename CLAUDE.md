@@ -32,7 +32,7 @@ No abstraction for one caller, no unasked config, no future-proofing (add it the
 **Name:** Continuous Improvement Financial Impact Calculator  
 **Purpose:** Translates Agile flow metrics (throughput, lead time, WIP, defects) into executive-level financial impact — so Scrum Masters and Agile Coaches justify CI value to decision-makers (CFO, directors).  
 **Stack:** HTML5 + CSS3 + JS ES6+ vanilla, zero framework, zero backend, `localStorage` only, GitHub Pages.  
-**Architecture:** Single file. `index.html` (HTML + `<style>` + `<script>`). Other files: `CLAUDE.md`, `CHANGELOG.md`, `README.md`, `LICENSE`.
+**Architecture:** Single file. `index.html` (HTML + `<style>` + `<script>`). Other files: `CLAUDE.md`, `CHANGELOG.md`, `README.md`, `LICENSE`, `tests/` (`formula-regression.js` — pure Node, no browser; `ux-regression.js` — Playwright/browser).
 
 ### Key functions in `index.html`
 
@@ -117,15 +117,37 @@ Rule: Can it be done natively in < 20 lines? Yes → do it. No → propose, just
 
 Conventional Commits: `feat` / `fix` / `refactor` / `docs` / `style` / `test`.  
 Branches: `main` (prod, auto-deploys to GitHub Pages) · `feat/[name]` · `fix/[name]`.  
-Pre-commit gate: no `console.log` · open `index.html` in browser · verify all 4 dimensions + headcount memo line calculate correctly · test dark mode + currency toggle.
+Pre-commit gate: no `console.log` · `node tests/formula-regression.js` (formulas) · `node tests/ux-regression.js` (UI/breakdown) · open `index.html` in browser · test dark mode + currency toggle.
 
-### Regression snapshot (v2.5 baseline)
+### Regression snapshot — Scenario A (v2.8 baseline, team unchanged)
 
-`blendRate=100, h/d=8, team=5→5, 3 months` → productivity ≈ 72 K$, ttm ≈ 60 K$, efficiency ≈ 295 $, quality ≈ 14.8 K$, total ≈ 147 K$, headcount ≈ 0 $ (team unchanged). Use to verify formulas haven't drifted after any calc change.
+Fully specified, exact values (no `≈`) — enforced by `tests/formula-regression.js` and the `T19` breakdown cross-check in `tests/ux-regression.js`. Any of these can drift silently if the formulas change without updating this snapshot; both test files will catch it.
 
-### Regression snapshot — headcount (v2.7 baseline)
+Inputs: `blendRate=100, hoursPerDay=8, teamSizeStart=5, teamSizeEnd=5, workingDaysPerMonth=20`, period `2026-01-01 → 2026-04-01` (3 months), `throughputPrev=40, throughputCurr=50, leadTimePrev=45, leadTimeCurr=40, wipPrev=25, wipCurr=20, defectsPrev=10, defectsCurr=6`.
 
-Same inputs but `team=7→5` (workingDaysPerMonth=20): `monthlyCostPerHead = 100 × 8 × 20 = 16 000$` → headcount ≈ `(7-5) × 16 000 × 3` = 96 K$ (period), 384 K$ (annual). The 4 core dimensions above are unaffected by this baseline change *except Productivity*, which already moves with `teamSizeEnd` — that's expected and pre-existing (see G9), not something this feature changes.
+| Dimension | Period | Annual |
+|---|---|---|
+| Productivity | 60 000 $ | 240 000 $ |
+| Time-to-Market | 60 000 $ | 240 000 $ |
+| Efficiency | 480 $ | 1 920 $ |
+| Quality | 19 200 $ | 76 800 $ |
+| Headcount (memo, hidden — team unchanged) | 0 $ | 0 $ |
+| **Total** | **139 680 $** | **558 720 $** |
+
+### Regression snapshot — Scenario B (v2.8 baseline, headcount reduced)
+
+Same inputs as Scenario A except `teamSizeStart=7` (team reduced 7→5).
+
+| Dimension | Period | Annual |
+|---|---|---|
+| Productivity | 180 000 $ | 720 000 $ |
+| Time-to-Market | 60 000 $ (unchanged from A) | 240 000 $ |
+| Efficiency | 480 $ (unchanged from A) | 1 920 $ |
+| Quality | 19 200 $ (unchanged from A) | 76 800 $ |
+| Headcount (memo) | 96 000 $ | 384 000 $ |
+| **Total** | **259 680 $** | **1 038 720 $** |
+
+Only Productivity and Headcount move between A and B — `teamSizeStart` feeds `costPerItemPrev` (via `monthlyCostStart`), which only Productivity consumes; TTM/Efficiency/Quality depend on `teamSizeEnd`/`costPerItemCurr` only, unchanged between the two scenarios. This is the G9 double-counting mechanism, locked down as a test assertion.
 
 ---
 
