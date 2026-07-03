@@ -673,6 +673,101 @@ function section(title) {
     else
       fail('#headcountItem hidden when team size unchanged', `got display: ${hiddenCheck}`);
 
+    // ─────────────────────────────────────────────────────────
+    // T19 — Breakdown panel cross-check (F4): displayed numbers and
+    // formula text must match the real calculation, not just the
+    // summary row. Uses the same exact-integer scenario as
+    // tests/formula-regression.js (CLAUDE.md baseline).
+    // ─────────────────────────────────────────────────────────
+    section('T19 — Breakdown panel matches the real calculation (F4)');
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
+
+    async function fillScenario(teamSizeStart) {
+      await page.fill('#blendRate', '100');
+      await page.fill('#hoursPerDay', '8');
+      await page.fill('#teamSizeStart', String(teamSizeStart));
+      await page.fill('#teamSizeEnd', '5');
+      await page.fill('#workingDaysPerMonth', '20');
+      await page.fill('#startDate', '2026-01-01');
+      await page.fill('#endDate', '2026-04-01');
+      await page.fill('#throughputPrev', '40');
+      await page.fill('#throughputCurr', '50');
+      await page.fill('#leadTimePrev', '45');
+      await page.fill('#leadTimeCurr', '40');
+      await page.fill('#wipPrev', '25');
+      await page.fill('#wipCurr', '20');
+      await page.fill('#defectsPrev', '10');
+      await page.fill('#defectsCurr', '6');
+      await page.dispatchEvent('#endDate', 'input');
+      await page.waitForTimeout(150);
+    }
+
+    await fillScenario(5); // Scenario A (team 5→5)
+
+    await page.click('#toggleBreakdown');
+    for (const panel of ['ttm', 'eff', 'qual', 'headcount']) {
+      await page.click(`.breakdown-tab[data-panel="${panel}"]`);
+    }
+    await page.click('.breakdown-tab[data-panel="prod"]'); // leave on a known tab
+
+    const bdA = await page.evaluate(() => {
+      const ids = ['bd-daily-cost', 'bd-cost-prev', 'bd-cost-curr', 'bd-change-item', 'bd-items-month-prod',
+        'bd-months-prod', 'bd-lt-change', 'bd-months', 'bd-wip-change', 'bd-wip-cost', 'bd-carrying-rate',
+        'bd-months-wip', 'bd-defects-change', 'bd-defects-cost', 'bd-months-quality',
+        'bd-headcount-team-start', 'bd-headcount-team-end', 'bd-headcount-cost-per-head', 'bd-months-headcount'];
+      const out = {};
+      ids.forEach(id => { const el = document.getElementById(id); out[id] = el ? el.textContent : null; });
+      return out;
+    });
+
+    const expectedA = {
+      'bd-daily-cost': '4.0 K$', 'bd-cost-prev': '2.0 K$', 'bd-cost-curr': '1.6 K$', 'bd-change-item': '-400$',
+      'bd-items-month-prod': '50', 'bd-months-prod': '3', 'bd-lt-change': '-5', 'bd-months': '3',
+      'bd-wip-change': '-5', 'bd-wip-cost': '1.6 K$', 'bd-carrying-rate': '2%', 'bd-months-wip': '3',
+      'bd-defects-change': '-4', 'bd-defects-cost': '1.6 K$', 'bd-months-quality': '3',
+      'bd-headcount-team-start': '5', 'bd-headcount-team-end': '5', 'bd-headcount-cost-per-head': '16.0 K$',
+      'bd-months-headcount': '3',
+    };
+    for (const [id, expected] of Object.entries(expectedA)) {
+      if (bdA[id] === expected) ok(`Scenario A: #${id} = "${expected}"`);
+      else fail(`Scenario A: #${id}`, `got "${bdA[id]}", expected "${expected}"`);
+    }
+
+    const formulaTexts = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.breakdown-formula-text')).map(el => el.textContent)
+    );
+    const expectedFormulas = [
+      'Impact = -((Cost/Item End - Cost/Item Start) × Items/Month End × Months)',
+      'Impact = -((Lead Time End - Lead Time Start) × Daily Cost × Months)',
+      'Impact = -((WIP End - WIP Start) × Cost/Item End × 2% × Months)',
+      'Impact = -((Defects End - Defects Start) × Cost/Item End × Months)',
+      'Impact = (Team Size Start - Team Size End) × Cost/Head/Month × Months',
+    ];
+    if (JSON.stringify(formulaTexts) === JSON.stringify(expectedFormulas))
+      ok('All 5 .breakdown-formula-text match the real formulas exactly');
+    else
+      fail('All 5 .breakdown-formula-text match the real formulas', `got ${JSON.stringify(formulaTexts)}`);
+
+    // Scenario B (team 7→5) — Productivity-linked values change, the rest must not
+    await fillScenario(7);
+
+    const bdB = await page.evaluate(() => {
+      const ids = ['bd-cost-prev', 'bd-change-item', 'bd-headcount-team-start', 'bd-cost-curr', 'bd-wip-cost', 'bd-defects-cost'];
+      const out = {};
+      ids.forEach(id => { const el = document.getElementById(id); out[id] = el ? el.textContent : null; });
+      return out;
+    });
+    const expectedB = {
+      'bd-cost-prev': '2.8 K$', 'bd-change-item': '-1.2 K$', 'bd-headcount-team-start': '7',
+      'bd-cost-curr': '1.6 K$', 'bd-wip-cost': '1.6 K$', 'bd-defects-cost': '1.6 K$',
+    };
+    for (const [id, expected] of Object.entries(expectedB)) {
+      if (bdB[id] === expected) ok(`Scenario B: #${id} = "${expected}"`);
+      else fail(`Scenario B: #${id}`, `got "${bdB[id]}", expected "${expected}"`);
+    }
+
     await page.close();
 
     // ─────────────────────────────────────────────────────────
