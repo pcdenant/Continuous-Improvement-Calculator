@@ -570,10 +570,11 @@ function section(title) {
 
     const memoStyling = await page.evaluate(() => {
       const item = document.getElementById('headcountItem');
-      const badge = document.querySelector('#headcountItem .memo-badge');
+      const annual = document.getElementById('headcountAnnual');
       return {
         hasMemoClass: item ? item.classList.contains('dim-row-memo') : false,
-        badgeText: badge ? badge.textContent : null,
+        display: item ? getComputedStyle(item).display : null,
+        annualText: annual ? annual.textContent : null,
       };
     });
     if (memoStyling.hasMemoClass)
@@ -581,10 +582,15 @@ function section(title) {
     else
       fail('#headcountItem has .dim-row-memo class', 'class missing');
 
-    if (memoStyling.badgeText && memoStyling.badgeText.toLowerCase().includes('not in total'))
-      ok(`Memo badge present: "${memoStyling.badgeText}"`);
+    if (memoStyling.display !== 'none')
+      ok(`#headcountItem visible when non-zero (display: ${memoStyling.display})`);
     else
-      fail('Memo badge present', `got "${memoStyling.badgeText}"`);
+      fail('#headcountItem visible when non-zero', 'display: none');
+
+    if (memoStyling.annualText === 'Memo — not included in Total')
+      ok(`#headcountAnnual shows memo text: "${memoStyling.annualText}"`);
+    else
+      fail('#headcountAnnual shows memo text', `got "${memoStyling.annualText}"`);
 
     // Total must exclude headcount — recompute expected total from the 4 core dimensions only
     const totalCheck = await page.evaluate(() => {
@@ -637,17 +643,35 @@ function section(title) {
 
     const growthCheck = await page.evaluate(() => {
       const item = document.getElementById('headcountItem');
-      return item ? item.classList.contains('negative') : null;
+      return {
+        negative: item ? item.classList.contains('negative') : null,
+        display: item ? getComputedStyle(item).display : null,
+      };
     });
-    if (growthCheck)
+    if (growthCheck.negative)
       ok('Headcount row flips to .negative when team grows (not floored at 0)');
     else
-      fail('Headcount row flips to .negative when team grows', `got class check = ${growthCheck}`);
+      fail('Headcount row flips to .negative when team grows', `got class check = ${growthCheck.negative}`);
 
-    // Reset to baseline (team unchanged) for a clean end state
+    if (growthCheck.display !== 'none')
+      ok(`#headcountItem stays visible when negative (display: ${growthCheck.display})`);
+    else
+      fail('#headcountItem stays visible when negative', 'display: none');
+
+    // Team unchanged → row must be hidden entirely (nothing interesting to show)
     await page.fill('#teamSizeStart', '5');
     await page.fill('#teamSizeEnd', '5');
     await page.dispatchEvent('#teamSizeEnd', 'input');
+    await page.waitForTimeout(150);
+
+    const hiddenCheck = await page.evaluate(() => {
+      const item = document.getElementById('headcountItem');
+      return item ? getComputedStyle(item).display : null;
+    });
+    if (hiddenCheck === 'none')
+      ok('#headcountItem hidden when team size unchanged (headcount = 0)');
+    else
+      fail('#headcountItem hidden when team size unchanged', `got display: ${hiddenCheck}`);
 
     await page.close();
 

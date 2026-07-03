@@ -8,14 +8,20 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ### Added — Headcount Cost Saving (F5, RICE #2)
 
-* **Nouvelle ligne "Headcount Cost Saving"** : nouvelle fonction pure `calcHeadcountSaving(teamSizeStart, teamSizeEnd, monthlyCostPerHead, months)` (`{ (teamSizeStart - teamSizeEnd) × monthlyCostPerHead × months }`), affichée dans une 5e `dim-row` après le "Total Financial Impact", avec badge "Memo — not in Total" et onglet breakdown dédié.
+* **Nouvelle ligne "Headcount Cost Saving"** : nouvelle fonction pure `calcHeadcountSaving(teamSizeStart, teamSizeEnd, monthlyCostPerHead, months)` (`{ (teamSizeStart - teamSizeEnd) × monthlyCostPerHead × months }`), affichée dans une 5e `dim-row` après le "Total Financial Impact", avec onglet breakdown dédié.
 * **Volontairement exclue du Total** : `totalPeriod`/`totalAnnual` restent la somme des 4 dimensions existantes uniquement — une réduction d'effectif fait déjà baisser `costPerItemCurr` (donc Productivity), l'ajouter au Total aurait doublé le comptage du même gain. Documenté en détail dans CLAUDE.md (nouvelle Gotcha G9) et README.md.
 * **Croissance d'équipe → valeur négative**, pas de plancher à 0 — formule symétrique.
+
+### Fixed — Revue post-PR (retours mobiles)
+
+* **Ligne masquée quand headcount = 0** (effectif inchangé) : plus rien d'affiché dans le résumé, l'onglet Breakdown "HEADCOUNT" reste lui toujours accessible.
+* **Badge `.memo-badge` retiré** — c'était le seul style de pastille/tag improvisé du fichier, sans précédent ailleurs, et il retombait sur sa propre ligne sur mobile. Remplacé par le texte "Memo — not included in Total" directement sur la ligne `.dim-row-annual`, déjà utilisée par les 4 autres dimensions.
+* **Opacité de la ligne (`.dim-row-memo { opacity: 0.85 }`) retirée** — elle se répercutait sur le tooltip descendant, le rendant plus transparent que les 4 autres tooltips de l'app. La bordure pointillée + le texte memo suffisent comme signal visuel.
 
 ### Note
 
 * Zéro changement aux 4 formules existantes (`calcProductivity`, `calcTTM`, `calcEfficiency`, `calcQuality`) — la nouvelle fonction est purement additive et n'entre dans aucune somme existante.
-* Snapshot de régression (blendRate=100, h/d=8, équipe=5→5, mois=3) toujours valide, `headcount ≈ 0$` (effectif inchangé).
+* Snapshot de régression (blendRate=100, h/d=8, équipe=5→5, mois=3) toujours valide, `headcount` masqué (effectif inchangé).
 
 ---
 

@@ -309,20 +309,6 @@
 
         .dim-row-memo {
             border-left-style: dashed;
-            opacity: 0.85;
-        }
-
-        .memo-badge {
-            display: inline-block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.625rem;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.45);
-            border: 1px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            padding: 1px 7px;
-            margin-left: 0.5rem;
         }
 
         .dim-row-left {
@@ -1196,9 +1182,8 @@
                                 </div>
                             </div>
                         </span>
-                        <span class="memo-badge">Memo — not in Total</span>
                     </div>
-                    <div class="dim-row-annual" id="headcountAnnual">Projected Annual: 0$</div>
+                    <div class="dim-row-annual" id="headcountAnnual">Memo — not included in Total</div>
                 </div>
                 <div class="dim-row-right">
                     <span class="summary-value" id="headcountPeriod">0$</span>
@@ -1876,6 +1861,8 @@
             updateDimensionDisplay('efficiency', efficiency.period, efficiency.annual, wipImprovement);
             updateDimensionDisplay('quality', quality.period, quality.annual, qualityImprovement);
             updateDimensionDisplay('headcount', headcountSaving.period, headcountSaving.annual, headcountImprovement);
+            document.getElementById('headcountAnnual').textContent = 'Memo — not included in Total';
+            document.getElementById('headcountItem').style.display = headcountSaving.period === 0 ? 'none' : 'flex';
             pulseDimValue('productivityPeriod');
             pulseDimValue('timeToMarketPeriod');
             pulseDimValue('efficiencyPeriod');

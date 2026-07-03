@@ -158,7 +158,7 @@ Purges hardcoded dates (`2024-08-01` / `2025-01-31`) from stale localStorage ses
 Current `DOMContentLoaded` call order: `migrateOldDates` → `loadFromLocalStorage` → `loadFromURL` → `setDefaultDates`. Reversing `loadFromLocalStorage` and `setDefaultDates` was the original v1.8 bug.
 
 **G9 — `calcHeadcountSaving` is a memo line, never add it to `totalPeriod`/`totalAnnual`.**  
-It reuses `teamSizeStart`/`teamSizeEnd`, which already feed `costPerItemCurr` and therefore `calcProductivity`. Summing both into the Total would double-count a real headcount reduction. It is deliberately excluded from the sum and styled/labeled as "Memo — not in Total" (v2.7). Do not "fix" this by adding it to the Total without also removing team size from Productivity's cost-per-item math — that's a bigger, separate change (see backlog item "Restructure results into Cost Saving / Cost Avoidance / Working-Capital sub-totals").
+It reuses `teamSizeStart`/`teamSizeEnd`, which already feed `costPerItemCurr` and therefore `calcProductivity`. Summing both into the Total would double-count a real headcount reduction. It is deliberately excluded from the sum and labeled "Memo — not included in Total" on its `dim-row-annual` line (v2.7). Do not "fix" this by adding it to the Total without also removing team size from Productivity's cost-per-item math — that's a bigger, separate change (see backlog item "Restructure results into Cost Saving / Cost Avoidance / Working-Capital sub-totals"). `#headcountItem` is also hidden (`display: none`) whenever `headcountSaving.period === 0` (team size unchanged) — there's nothing to disclose in that case; the Breakdown tab stays available regardless.
 
 ---
 
