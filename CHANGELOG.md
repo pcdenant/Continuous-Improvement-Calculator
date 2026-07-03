@@ -4,6 +4,21 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.7] — 2026-07-03
+
+### Added — Headcount Cost Saving (F5, RICE #2)
+
+* **Nouvelle ligne "Headcount Cost Saving"** : nouvelle fonction pure `calcHeadcountSaving(teamSizeStart, teamSizeEnd, monthlyCostPerHead, months)` (`{ (teamSizeStart - teamSizeEnd) × monthlyCostPerHead × months }`), affichée dans une 5e `dim-row` après le "Total Financial Impact", avec badge "Memo — not in Total" et onglet breakdown dédié.
+* **Volontairement exclue du Total** : `totalPeriod`/`totalAnnual` restent la somme des 4 dimensions existantes uniquement — une réduction d'effectif fait déjà baisser `costPerItemCurr` (donc Productivity), l'ajouter au Total aurait doublé le comptage du même gain. Documenté en détail dans CLAUDE.md (nouvelle Gotcha G9) et README.md.
+* **Croissance d'équipe → valeur négative**, pas de plancher à 0 — formule symétrique.
+
+### Note
+
+* Zéro changement aux 4 formules existantes (`calcProductivity`, `calcTTM`, `calcEfficiency`, `calcQuality`) — la nouvelle fonction est purement additive et n'entre dans aucune somme existante.
+* Snapshot de régression (blendRate=100, h/d=8, équipe=5→5, mois=3) toujours valide, `headcount ≈ 0$` (effectif inchangé).
+
+---
+
 ## [v2.6] — 2026-07-02
 
 ### Added — Disclosure (F12, RICE #1)

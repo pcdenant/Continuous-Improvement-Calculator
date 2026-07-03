@@ -52,10 +52,15 @@ function section(title) {
     if (title) ok('Page loads with a title');
     else fail('Page loads with a title', `got empty title`);
 
-    // All 4 summary values should be non-empty
+    // All 4 dimensions + headcount memo line should be non-empty.
+    // Note: `#totalPeriod` uses `.total-hero-value`, not `.summary-value` — the
+    // pre-existing comment/count here ("4 dimensions + total") was already
+    // inaccurate before this change (it counted 5 when only 4 `.summary-value`
+    // elements existed), left uncaught since there's no CI. Fixed alongside
+    // the headcount addition rather than left further out of date.
     const summaryValues = await page.locator('.summary-value').allTextContents();
     if (summaryValues.length === 5)
-      ok(`5 summary values rendered (4 dimensions + total)`);
+      ok(`5 summary values rendered (4 dimensions + headcount memo)`);
     else
       fail('5 summary values rendered', `got ${summaryValues.length}`);
 
@@ -371,10 +376,10 @@ function section(title) {
     const headerTags = await page.evaluate(() =>
       Array.from(document.querySelectorAll('.breakdown-header')).map(el => el.tagName)
     );
-    if (headerTags.length === 4)
-      ok(`4 éléments .breakdown-header trouvés`);
+    if (headerTags.length === 5)
+      ok(`5 éléments .breakdown-header trouvés (4 dimensions + headcount)`);
     else
-      fail('4 éléments .breakdown-header', `got ${headerTags.length}`);
+      fail('5 éléments .breakdown-header', `got ${headerTags.length}`);
 
     const allH3 = headerTags.every(t => t === 'H3');
     if (allH3)
@@ -523,6 +528,126 @@ function section(title) {
       ok('#blendRate perd input-zero avec valeur > 0');
     else
       fail('#blendRate perd input-zero', 'classe encore présente avec valeur 125');
+
+    // ─────────────────────────────────────────────────────────
+    // T18 — Headcount Cost Saving memo line (F5, RICE #2)
+    // ─────────────────────────────────────────────────────────
+    section('T18 — Headcount Cost Saving memo line (F5)');
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
+
+    await page.fill('#blendRate', '100');
+    await page.fill('#hoursPerDay', '8');
+    await page.fill('#workingDaysPerMonth', '20');
+    await page.fill('#teamSizeStart', '7');
+    await page.fill('#teamSizeEnd', '5');
+    await page.fill('#startDate', '2026-02-01');
+    await page.fill('#endDate', '2026-05-01');
+    await page.dispatchEvent('#endDate', 'input');
+    await page.waitForTimeout(500);
+
+    const headcountCheck = await page.evaluate(() => {
+      const blendRate = parseFloat(document.getElementById('blendRate').value) || 0;
+      const hoursPerDay = parseFloat(document.getElementById('hoursPerDay').value) || 0;
+      const teamSizeStart = parseFloat(document.getElementById('teamSizeStart').value) || 1;
+      const teamSizeEnd = parseFloat(document.getElementById('teamSizeEnd').value) || 1;
+      const workingDaysPerMonth = parseFloat(document.getElementById('workingDaysPerMonth').value) || 20;
+      const months = window.calculateMonths(document.getElementById('startDate').value, document.getElementById('endDate').value);
+      const monthlyCostPerHead = blendRate * hoursPerDay * workingDaysPerMonth;
+      const expected = window.calcHeadcountSaving(teamSizeStart, teamSizeEnd, monthlyCostPerHead, months);
+      return {
+        domPeriod: document.getElementById('headcountPeriod').textContent,
+        expectedText: window.formatCurrency(expected.period),
+        expectedPeriod: expected.period,
+      };
+    });
+
+    if (headcountCheck.domPeriod === headcountCheck.expectedText)
+      ok(`#headcountPeriod matches formula (${headcountCheck.domPeriod}, expected ${headcountCheck.expectedPeriod}$)`);
+    else
+      fail('#headcountPeriod matches formula', `got "${headcountCheck.domPeriod}", expected "${headcountCheck.expectedText}"`);
+
+    const memoStyling = await page.evaluate(() => {
+      const item = document.getElementById('headcountItem');
+      const badge = document.querySelector('#headcountItem .memo-badge');
+      return {
+        hasMemoClass: item ? item.classList.contains('dim-row-memo') : false,
+        badgeText: badge ? badge.textContent : null,
+      };
+    });
+    if (memoStyling.hasMemoClass)
+      ok('#headcountItem has .dim-row-memo class');
+    else
+      fail('#headcountItem has .dim-row-memo class', 'class missing');
+
+    if (memoStyling.badgeText && memoStyling.badgeText.toLowerCase().includes('not in total'))
+      ok(`Memo badge present: "${memoStyling.badgeText}"`);
+    else
+      fail('Memo badge present', `got "${memoStyling.badgeText}"`);
+
+    // Total must exclude headcount — recompute expected total from the 4 core dimensions only
+    const totalCheck = await page.evaluate(() => {
+      const blendRate = parseFloat(document.getElementById('blendRate').value) || 0;
+      const hoursPerDay = parseFloat(document.getElementById('hoursPerDay').value) || 0;
+      const teamSizeStart = parseFloat(document.getElementById('teamSizeStart').value) || 1;
+      const teamSizeEnd = parseFloat(document.getElementById('teamSizeEnd').value) || 1;
+      const workingDaysPerMonth = parseFloat(document.getElementById('workingDaysPerMonth').value) || 20;
+      const months = window.calculateMonths(document.getElementById('startDate').value, document.getElementById('endDate').value);
+
+      const dailyCostStart = blendRate * hoursPerDay * teamSizeStart;
+      const dailyCostEnd = blendRate * hoursPerDay * teamSizeEnd;
+      const monthlyCostStart = dailyCostStart * workingDaysPerMonth;
+      const monthlyCostEnd = dailyCostEnd * workingDaysPerMonth;
+
+      const throughputPrev = parseFloat(document.getElementById('throughputPrev').value) || 0;
+      const throughputCurr = parseFloat(document.getElementById('throughputCurr').value) || 0;
+      const leadTimePrev = parseFloat(document.getElementById('leadTimePrev').value) || 0;
+      const leadTimeCurr = parseFloat(document.getElementById('leadTimeCurr').value) || 0;
+      const wipPrev = parseFloat(document.getElementById('wipPrev').value) || 0;
+      const wipCurr = parseFloat(document.getElementById('wipCurr').value) || 0;
+      const defectsPrev = parseFloat(document.getElementById('defectsPrev').value) || 0;
+      const defectsCurr = parseFloat(document.getElementById('defectsCurr').value) || 0;
+
+      const costPerItemPrev = throughputPrev > 0 ? monthlyCostStart / throughputPrev : 0;
+      const costPerItemCurr = throughputCurr > 0 ? monthlyCostEnd / throughputCurr : 0;
+
+      const productivity = window.calcProductivity(costPerItemPrev, costPerItemCurr, throughputCurr, months);
+      const ttm = window.calcTTM(leadTimeCurr - leadTimePrev, dailyCostEnd, months);
+      const efficiency = window.calcEfficiency(wipCurr - wipPrev, costPerItemCurr, months);
+      const quality = window.calcQuality(defectsCurr - defectsPrev, costPerItemCurr, months);
+      const expectedTotal = productivity.period + ttm.period + efficiency.period + quality.period;
+
+      return {
+        expectedTotalText: window.formatCurrency(expectedTotal),
+        domTotalText: document.getElementById('totalPeriod').textContent,
+      };
+    });
+
+    if (totalCheck.domTotalText === totalCheck.expectedTotalText)
+      ok(`Total excludes headcount memo line (total=${totalCheck.domTotalText})`);
+    else
+      fail('Total excludes headcount memo line', `got "${totalCheck.domTotalText}", expected "${totalCheck.expectedTotalText}" (4-dim sum only)`);
+
+    // Growing team → negative headcount value, not floored at 0
+    await page.fill('#teamSizeStart', '5');
+    await page.fill('#teamSizeEnd', '7');
+    await page.dispatchEvent('#teamSizeEnd', 'input');
+    await page.waitForTimeout(150);
+
+    const growthCheck = await page.evaluate(() => {
+      const item = document.getElementById('headcountItem');
+      return item ? item.classList.contains('negative') : null;
+    });
+    if (growthCheck)
+      ok('Headcount row flips to .negative when team grows (not floored at 0)');
+    else
+      fail('Headcount row flips to .negative when team grows', `got class check = ${growthCheck}`);
+
+    // Reset to baseline (team unchanged) for a clean end state
+    await page.fill('#teamSizeStart', '5');
+    await page.fill('#teamSizeEnd', '5');
+    await page.dispatchEvent('#teamSizeEnd', 'input');
 
     await page.close();
 

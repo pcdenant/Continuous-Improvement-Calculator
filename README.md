@@ -8,7 +8,7 @@ A single-file web tool that translates flow metrics into financial impact for le
 
 ## What it does
 
-Enter your team's flow metrics at the start and end of an improvement period. The calculator converts the delta into dollar (or euro) savings across four independent dimensions:
+Enter your team's flow metrics at the start and end of an improvement period. The calculator converts the delta into dollar (or euro) savings across four independent dimensions, plus one memo line:
 
 | Dimension | Leadership framing |
 | --- | --- |
@@ -16,14 +16,17 @@ Enter your team's flow metrics at the start and end of an improvement period. Th
 | Time-to-Market | Revenue Acceleration |
 | Efficiency (WIP) | Carrying Cost Reduction |
 | Quality | Rework Cost Elimination |
+| Headcount Cost Saving (memo) | Headcount Cash Saving — not included in Total |
 
 Each dimension shows the impact over the measured period and a projected annual figure.
 
 ---
 
-## Why these four dimensions
+## Why these four dimensions (plus one memo line)
 
-They are intentionally independent — not mathematically linked via Little's Law. This is a design choice, not an oversight. Linking them creates a double-counting problem (WIP × Throughput × Lead Time are interdependent). Keeping them separate makes the tool usable without requiring practitioners to resolve the dependency before presenting results.
+The four core dimensions are intentionally independent — not mathematically linked via Little's Law. This is a design choice, not an oversight. Linking them creates a double-counting problem (WIP × Throughput × Lead Time are interdependent). Keeping them separate makes the tool usable without requiring practitioners to resolve the dependency before presenting results.
+
+**Headcount Cost Saving** is shown separately, below the Total, and deliberately excluded from it. A real headcount reduction already lowers Cost per Item, which Productivity accounts for — adding a dedicated headcount line to the same Total would double-count that same reduction. The memo line exists to disclose that part of the Productivity number is actual cash saved, not just avoided cost, without inflating the headline figure.
 
 ---
 
@@ -95,6 +98,16 @@ Impact = -((Defects End − Defects Start) × Cost/Item End × Months)
 
 Defects are a flow metric (count/month), so multiplying by months is correct: fewer defects per month, compounded over the period.
 
+**Headcount Cost Saving (memo — not in Total)**
+
+```
+Impact = (Team Size Start − Team Size End) × Cost/Head/Month × Months
+```
+
+Where `Cost/Head/Month = Blend Rate × Hours/Day × Working Days/Month`
+
+A shrinking team produces a positive value (cash saved); a growing team produces a negative value (added cost) — the formula is symmetric, it isn't floored at zero. This line is **excluded from Total Financial Impact**: Productivity above already reflects the same headcount change through Cost per Item, so summing both would double-count it.
+
 **Negative sign convention**: a reduction in cost/time/WIP/defects produces a positive savings value. An increase produces a negative value (cost increase), shown in red.
 
 ---
@@ -105,6 +118,7 @@ Defects are a flow metric (count/month), so multiplying by months is correct: fe
 * **Negative values** = cost increase (shown in red) — the team got worse on that dimension
 * **Projected Annual** = period impact ÷ months × 12
 * All four dimensions are independent — total impact is a sum, not a derived figure
+* **Headcount Cost Saving** is a memo line — it is not part of the sum
 
 ---
 

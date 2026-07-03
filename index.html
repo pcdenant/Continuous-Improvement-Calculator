@@ -307,6 +307,24 @@
             border-left-color: rgba(255, 149, 0, 0.4);
         }
 
+        .dim-row-memo {
+            border-left-style: dashed;
+            opacity: 0.85;
+        }
+
+        .memo-badge {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.625rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.45);
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 1px 7px;
+            margin-left: 0.5rem;
+        }
+
         .dim-row-left {
             display: flex;
             flex-direction: column;
@@ -1159,6 +1177,35 @@
                 <div class="total-hero-annual" id="totalAnnual">Projected Annual: 0$</div>
             </div>
 
+            <div class="dim-row dim-row-memo" id="headcountItem">
+                <div class="dim-row-left">
+                    <div class="dim-row-label">
+                        <span class="tooltip-trigger">
+                            <span>Headcount Cost Saving</span>
+                            <span class="tooltip-icon">?</span>
+                            <div class="tooltip-content">
+                                <div class="tooltip-title">Why this number moves</div>
+                                <div class="tooltip-text">A real reduction in team size is cash saved, not just avoided cost. It moves only when Team Size (End) is lower than Team Size (Start).</div>
+                                <div class="tooltip-blockers">
+                                    <div class="tooltip-blockers-title">Blockers</div>
+                                    <div class="tooltip-blockers-list">• Attrition backfilled instead of absorbed<br>• Headcount moved to another team, not removed<br>• Contractors/vendors not reflected in team size</div>
+                                </div>
+                                <div class="tooltip-caveat">
+                                    <div class="tooltip-caveat-title">Reading note</div>
+                                    <div class="tooltip-caveat-text">Memo line — not included in Total Financial Impact above. A headcount reduction already lowers Cost per Item, which Productivity accounts for; this line exists only to show that saving as actual cash, not to add to it.</div>
+                                </div>
+                            </div>
+                        </span>
+                        <span class="memo-badge">Memo — not in Total</span>
+                    </div>
+                    <div class="dim-row-annual" id="headcountAnnual">Projected Annual: 0$</div>
+                </div>
+                <div class="dim-row-right">
+                    <span class="summary-value" id="headcountPeriod">0$</span>
+                    <span class="summary-improvement" id="headcountImprovement">0%</span>
+                </div>
+            </div>
+
             <div class="action-buttons">
                 <button class="btn" id="toggleBreakdown">Show Breakdown</button>
                 <button class="btn-secondary" id="saveShareLink">Save/Share Link</button>
@@ -1172,6 +1219,7 @@
                     <button class="breakdown-tab" data-panel="ttm">TIME-TO-MARKET</button>
                     <button class="breakdown-tab" data-panel="eff">EFFICIENCY</button>
                     <button class="breakdown-tab" data-panel="qual">QUALITY</button>
+                    <button class="breakdown-tab" data-panel="headcount">HEADCOUNT</button>
                 </div>
 
                 <div class="breakdown-panel active" id="breakdown-prod">
@@ -1283,6 +1331,35 @@
                     <div class="breakdown-detail">
                         <span class="breakdown-label">Period (months)</span>
                         <span class="breakdown-value" id="bd-months-quality">0</span>
+                    </div>
+                </div>
+
+                <div class="breakdown-panel" id="breakdown-headcount">
+                    <h3 class="breakdown-header">Headcount Cost Saving</h3>
+                    <div class="breakdown-formula">
+                        <div class="breakdown-formula-title">Formula</div>
+                        <div class="breakdown-formula-text">Impact = (Team Size Start - Team Size End) × Cost/Head/Month × Months</div>
+                    </div>
+                    <div class="breakdown-leadership">
+                        <span class="breakdown-leadership-label">For leadership</span>
+                        <span class="breakdown-leadership-value">Headcount Cash Saving (memo — not in Total)</span>
+                    </div>
+                    <div class="breakdown-rationale-text">A real reduction in team size frees fully-loaded cash cost, not just avoided cost. Shown separately because Productivity above already reflects this same headcount change through Cost per Item — adding both to the Total would double-count it.</div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Team Size (Start)</span>
+                        <span class="breakdown-value" id="bd-headcount-team-start">0</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Team Size (End)</span>
+                        <span class="breakdown-value" id="bd-headcount-team-end">0</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Cost per Head per Month</span>
+                        <span class="breakdown-value" id="bd-headcount-cost-per-head">0$</span>
+                    </div>
+                    <div class="breakdown-detail">
+                        <span class="breakdown-label">Period (months)</span>
+                        <span class="breakdown-value" id="bd-months-headcount">0</span>
                     </div>
                 </div>
             </div>
@@ -1690,6 +1767,11 @@
             return { period, annual: (period / months) * 12 };
         }
 
+        function calcHeadcountSaving(teamSizeStart, teamSizeEnd, monthlyCostPerHead, months) {
+            const period = (teamSizeStart - teamSizeEnd) * monthlyCostPerHead * months;
+            return { period, annual: (period / months) * 12 };
+        }
+
         function updateDimensionDisplay(prefix, period, annual, improvement) {
             document.getElementById(`${prefix}Period`).textContent = formatCurrency(period);
             document.getElementById(`${prefix}Improvement`).textContent = formatPercentage(improvement);
@@ -1756,6 +1838,7 @@
             const dailyCostEnd = blendRate * hoursPerDay * teamSizeEnd;
             const monthlyCostStart = dailyCostStart * workingDaysPerMonth;
             const monthlyCostEnd = dailyCostEnd * workingDaysPerMonth;
+            const monthlyCostPerHead = blendRate * hoursPerDay * workingDaysPerMonth;
 
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
@@ -1777,6 +1860,7 @@
             const ttm = calcTTM(leadTimeCurr - leadTimePrev, dailyCostEnd, months);
             const efficiency = calcEfficiency(wipCurr - wipPrev, costPerItemCurr, months);
             const quality = calcQuality(defectsCurr - defectsPrev, costPerItemCurr, months);
+            const headcountSaving = calcHeadcountSaving(teamSizeStart, teamSizeEnd, monthlyCostPerHead, months);
 
             const totalPeriod = productivity.period + ttm.period + efficiency.period + quality.period;
             const totalAnnual = productivity.annual + ttm.annual + efficiency.annual + quality.annual;
@@ -1785,15 +1869,18 @@
             const ttmImprovement = leadTimePrev > 0 ? (leadTimePrev - leadTimeCurr) / leadTimePrev * 100 : 0;
             const wipImprovement = wipPrev > 0 ? (wipPrev - wipCurr) / wipPrev * 100 : 0;
             const qualityImprovement = defectsPrev > 0 ? (defectsPrev - defectsCurr) / defectsPrev * 100 : 0;
+            const headcountImprovement = teamSizeStart > 0 ? (teamSizeStart - teamSizeEnd) / teamSizeStart * 100 : 0;
 
             updateDimensionDisplay('productivity', productivity.period, productivity.annual, productivityImprovement);
             updateDimensionDisplay('timeToMarket', ttm.period, ttm.annual, ttmImprovement);
             updateDimensionDisplay('efficiency', efficiency.period, efficiency.annual, wipImprovement);
             updateDimensionDisplay('quality', quality.period, quality.annual, qualityImprovement);
+            updateDimensionDisplay('headcount', headcountSaving.period, headcountSaving.annual, headcountImprovement);
             pulseDimValue('productivityPeriod');
             pulseDimValue('timeToMarketPeriod');
             pulseDimValue('efficiencyPeriod');
             pulseDimValue('qualityPeriod');
+            pulseDimValue('headcountPeriod');
 
             animateCounter(totalPeriod);
             document.getElementById('totalAnnual').textContent = `Projected Annual: ${formatCurrency(totalAnnual)}`;
@@ -1819,6 +1906,11 @@
             document.getElementById('bd-defects-change').textContent = (defectsCurr - defectsPrev).toFixed(0);
             document.getElementById('bd-defects-cost').textContent = formatCurrency(costPerItemCurr);
             document.getElementById('bd-months-quality').textContent = months;
+
+            document.getElementById('bd-headcount-team-start').textContent = teamSizeStart.toFixed(0);
+            document.getElementById('bd-headcount-team-end').textContent = teamSizeEnd.toFixed(0);
+            document.getElementById('bd-headcount-cost-per-head').textContent = formatCurrency(monthlyCostPerHead);
+            document.getElementById('bd-months-headcount').textContent = months;
         }
 
         // Toggle breakdown
