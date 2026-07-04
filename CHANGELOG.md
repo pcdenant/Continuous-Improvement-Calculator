@@ -4,6 +4,19 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.9] — 2026-07-04
+
+### Removed — Fichiers égarés à la racine du repo (F11, RICE)
+
+* **3 fichiers de sauvegarde supprimés** : `indexV1.bak`, `index_v1.3.bak`, `index_v1.9.bak` — l'historique git est la seule source de versions précédentes.
+* **2 livrables de sessions UI passées supprimés** : `ui-recommendations.html`, `ui-recommendations-v2.html` — propositions déjà implémentées (v2.x), conservées dans l'historique git.
+
+### Note
+
+* Zéro changement de comportement — `index.html` et les tests ne référencent aucun de ces fichiers.
+
+---
+
 ## [v2.8] — 2026-07-03
 
 ### Test — Formula-level regression suite (F4, RICE #5)
