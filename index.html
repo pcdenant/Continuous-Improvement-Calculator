@@ -546,6 +546,15 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
+        /* Method note — observed vs extrapolated disclosure (F3, v2.12) */
+        .method-note {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.45);
+            max-width: 34rem;
+            margin: 0.75rem auto 0;
+            line-height: 1.5;
+        }
+
         /* Gold glow — fires once when all 4 dimensions are positive */
         @keyframes gold-glow-pulse {
             0%   { box-shadow: 0 0 0 0 rgba(255, 242, 0, 0); }
@@ -1061,7 +1070,7 @@
                                 </div>
                             </span>
                         </div>
-                        <div class="dim-row-annual" id="productivityAnnual">Projected Annual: 0$</div>
+                        <div class="dim-row-annual" id="productivityAnnual">Projected Annual (×12): 0$</div>
                     </div>
                     <div class="dim-row-right">
                         <span class="summary-value" id="productivityPeriod">0$</span>
@@ -1089,7 +1098,7 @@
                                 </div>
                             </span>
                         </div>
-                        <div class="dim-row-annual" id="timeToMarketAnnual">Projected Annual: 0$</div>
+                        <div class="dim-row-annual" id="timeToMarketAnnual">Projected Annual (×12): 0$</div>
                     </div>
                     <div class="dim-row-right">
                         <span class="summary-value" id="timeToMarketPeriod">0$</span>
@@ -1113,7 +1122,7 @@
                                 </div>
                             </span>
                         </div>
-                        <div class="dim-row-annual" id="efficiencyAnnual">Projected Annual: 0$</div>
+                        <div class="dim-row-annual" id="efficiencyAnnual">Projected Annual (×12): 0$</div>
                     </div>
                     <div class="dim-row-right">
                         <span class="summary-value" id="efficiencyPeriod">0$</span>
@@ -1141,7 +1150,7 @@
                                 </div>
                             </span>
                         </div>
-                        <div class="dim-row-annual" id="qualityAnnual">Projected Annual: 0$</div>
+                        <div class="dim-row-annual" id="qualityAnnual">Projected Annual (×12): 0$</div>
                     </div>
                     <div class="dim-row-right">
                         <span class="summary-value" id="qualityPeriod">0$</span>
@@ -1151,9 +1160,10 @@
             </div>
 
             <div class="total-hero" id="totalItem">
-                <div class="total-hero-label">Total Financial Impact</div>
+                <div class="total-hero-label">Total Financial Impact — Observed over Period</div>
                 <div class="total-hero-value" id="totalPeriod">0$</div>
-                <div class="total-hero-annual" id="totalAnnual">Projected Annual: 0$</div>
+                <div class="total-hero-annual" id="totalAnnual">Projected Annual (×12): 0$</div>
+                <div class="method-note" id="methodNote">Period figures are observed over the selected date range. Annual figures extrapolate that period ×12 — the shorter the period, the more indicative (not predictive) the projection.</div>
             </div>
 
             <div class="dim-row dim-row-memo" id="headcountItem">
@@ -1751,7 +1761,7 @@
         function updateDimensionDisplay(prefix, period, annual, improvement) {
             document.getElementById(`${prefix}Period`).textContent = formatCurrency(period);
             document.getElementById(`${prefix}Improvement`).textContent = formatPercentage(improvement);
-            document.getElementById(`${prefix}Annual`).textContent = `Projected Annual: ${formatCurrency(annual)}`;
+            document.getElementById(`${prefix}Annual`).textContent = `Projected Annual (×12): ${formatCurrency(annual)}`;
             updateItemStyle(document.getElementById(`${prefix}Item`), period);
             updateImprovementStyle(document.getElementById(`${prefix}Improvement`), improvement);
         }
@@ -1861,7 +1871,7 @@
             pulseDimValue('headcountPeriod');
 
             animateCounter(totalPeriod);
-            document.getElementById('totalAnnual').textContent = `Projected Annual: ${formatCurrency(totalAnnual)}`;
+            document.getElementById('totalAnnual').textContent = `Projected Annual (×12): ${formatCurrency(totalAnnual)}`;
             updateItemStyle(document.getElementById('totalItem'), totalPeriod);
             triggerGoldGlow([productivity.period, ttm.period, efficiency.period, quality.period]);
 

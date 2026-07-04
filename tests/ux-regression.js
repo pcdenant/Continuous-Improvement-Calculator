@@ -801,6 +801,43 @@ function section(title) {
     await pageT20.close();
 
     // ─────────────────────────────────────────────────────────
+    // T21 — Observed vs extrapolated disclosure (F3, absorbs F9):
+    // annual figures must be labeled as ×12 extrapolations, the
+    // Total hero as observed, and the method note must be present
+    // with the short-period caution.
+    // ─────────────────────────────────────────────────────────
+    section('T21 — Observed vs extrapolated labels + method note (F3)');
+
+    const pageT21 = await browser.newPage();
+    await pageT21.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
+
+    const t21 = await pageT21.evaluate(() => ({
+      heroLabel: document.querySelector('.total-hero-label').textContent,
+      note: (document.getElementById('methodNote') || { textContent: null }).textContent,
+      annualLabels: ['productivityAnnual', 'timeToMarketAnnual', 'efficiencyAnnual', 'qualityAnnual', 'totalAnnual']
+        .map(id => ({ id, text: document.getElementById(id).textContent })),
+    }));
+
+    if (t21.heroLabel.includes('Observed over Period'))
+      ok('Total hero label marks the period figure as observed');
+    else
+      fail('Total hero label marks the period figure as observed', `got "${t21.heroLabel}"`);
+
+    for (const { id, text } of t21.annualLabels) {
+      if (text.startsWith('Projected Annual (×12):'))
+        ok(`#${id} labeled as ×12 extrapolation`);
+      else
+        fail(`#${id} labeled as ×12 extrapolation`, `got "${text}"`);
+    }
+
+    if (t21.note && t21.note.includes('×12') && t21.note.includes('the shorter the period'))
+      ok('Method note present with ×12 + short-period caution (F9)');
+    else
+      fail('Method note present with ×12 + short-period caution (F9)', `got "${t21.note}"`);
+
+    await pageT21.close();
+
+    // ─────────────────────────────────────────────────────────
     // Summary
     // ─────────────────────────────────────────────────────────
     console.log('\n' + '─'.repeat(50));

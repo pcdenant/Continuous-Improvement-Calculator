@@ -4,6 +4,24 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.12] — 2026-07-04
+
+### Added — Observé vs extrapolé (F3, RICE — absorbe F9)
+
+* **Libellés annuels explicites** : « Projected Annual: » → « Projected Annual (×12): » sur les 4 dimensions et le Total (placeholders HTML + `updateDimensionDisplay` + `calculate`). L'extrapolation n'est plus implicite.
+* **Total hero marqué observé** : « Total Financial Impact » → « Total Financial Impact — Observed over Period ».
+* **Note de méthode** (`#methodNote`, sous le Total hero) : chiffres de période = observés sur la plage sélectionnée ; chiffres annuels = extrapolation ×12 ; plus la période est courte, plus la projection est indicative. **Cette phrase absorbe le finding F9** (« data-window quality flag ») — l'item F9 sort du backlog RICE, `checkPeriodWarning` couvrant déjà le cas < 1 mois.
+
+### Tests
+
+* **`tests/ux-regression.js` — nouveau bloc `T21`** : libellé « (×12) » sur les 5 lignes annuelles, mention « Observed over Period » sur le Total hero, présence de la note de méthode avec la mise en garde période courte.
+
+### Note
+
+* Zéro changement calculatoire — libellés et texte statique uniquement ; snapshots A/B inchangés.
+
+---
+
 ## [v2.11] — 2026-07-04
 
 ### Fixed — Une seule histoire de démo (F7, RICE)
