@@ -4,6 +4,24 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.10] — 2026-07-04
+
+### Removed — Input `workingDaysPerWeek` inutilisé (F8, RICE)
+
+* **Champ "Working Days per Week" supprimé** : collecté, sauvegardé dans localStorage et partagé par URL depuis v1.x, mais jamais lu par `calculate()` (la variable dérivée `weeklyCost` avait été supprimée en v1.9b). Retiré de l'input HTML, de `DEFAULTS` et de `getAllValues`.
+* **Compatibilité descendante** : les vieux localStorage / vieilles URLs contenant encore `workingDaysPerWeek` sont ignorés silencieusement — `setAllValues` a déjà un null-guard (`if (element)`), aucune migration nécessaire.
+
+### Docs
+
+* CLAUDE.md : param retiré de la liste « URL params » ; numéros de ligne de la table des fonctions et des constantes resynchronisés avec le fichier.
+* README.md : « Working Days per Week / per Month » → « Working Days per Month ».
+
+### Note
+
+* Zéro changement calculatoire — le champ n'alimentait aucune formule ; snapshots A/B inchangés.
+
+---
+
 ## [v2.9] — 2026-07-04
 
 ### Removed — Fichiers égarés à la racine du repo (F11, RICE)
