@@ -38,34 +38,34 @@ No abstraction for one caller, no unasked config, no future-proofing (add it the
 
 | Function | Line | Role |
 |---|---|---|
-| `calculate` | 1828 | Main orchestrator — reads all inputs, calls 5 pure calc fns (4 dimensions + 1 memo), updates DOM |
-| `calcProductivity` | 1749 | Pure calc: returns `{ period, annual }` |
-| `calcTTM` | 1755 | Pure calc: returns `{ period, annual }` |
-| `calcEfficiency` | 1760 | Pure calc: returns `{ period, annual }` |
-| `calcQuality` | 1765 | Pure calc: returns `{ period, annual }` |
-| `calcHeadcountSaving` | 1770 | Pure calc: returns `{ period, annual }` — memo line, excluded from Total (see formulas below) |
-| `updateDimensionDisplay` | 1775 | DOM update helper — avoids 4× (now 5×) repeated DOM pattern |
-| `getAllValues` | 1438 | Serializes all inputs to JS object |
-| `setAllValues` | 1460 | Fills inputs from object |
-| `loadFromURL` | 1493 | URL params → inputs (takes priority over localStorage) |
-| `generateShareableURL` | 1507 | Encodes all inputs as query string |
-| `calculateMonths` | 1666 | Timezone-safe month diff (fixed v2.1) |
-| `debouncedSave` | 1722 | 800ms debounce — fires after input silence, not every keystroke |
-| `migrateOldDates` | 1404 | One-shot migration purging hardcoded dates from old sessions |
-| `setDefaultDates` | 1418 | End = today, Start = 3 months prior |
-| `checkPeriodWarning` | 1731 | Shows warning if date range < 1 month |
-| `validateZeroInputs` | 1741 | Yellow border on `blendRate`/`hoursPerDay` if zero |
-| `toggleTheme` / `loadTheme` | 1553 / 1635 | Dark/light + localStorage persistence |
-| `toggleCurrency` / `loadCurrency` | 1562 / 1642 | $/€ toggle + recalculate |
-| `initTooltips` | 1572 | Click/hover with 44px touch targets via `::after` pseudo-element |
-| `showToast` | 1428 | Toast notification |
-| `clearSavedData` | 1537 | Resets to `DEFAULTS` object (line 1386) |
+| `calculate` | 1804 | Main orchestrator — reads all inputs, calls 5 pure calc fns (4 dimensions + 1 memo), updates DOM |
+| `calcProductivity` | 1725 | Pure calc: returns `{ period, annual }` |
+| `calcTTM` | 1731 | Pure calc: returns `{ period, annual }` |
+| `calcEfficiency` | 1736 | Pure calc: returns `{ period, annual }` |
+| `calcQuality` | 1741 | Pure calc: returns `{ period, annual }` |
+| `calcHeadcountSaving` | 1746 | Pure calc: returns `{ period, annual }` — memo line, excluded from Total (see formulas below) |
+| `updateDimensionDisplay` | 1751 | DOM update helper — avoids 4× (now 5×) repeated DOM pattern |
+| `getAllValues` | 1415 | Serializes all inputs to JS object |
+| `setAllValues` | 1436 | Fills inputs from object |
+| `loadFromURL` | 1469 | URL params → inputs (takes priority over localStorage) |
+| `generateShareableURL` | 1483 | Encodes all inputs as query string |
+| `calculateMonths` | 1642 | Timezone-safe month diff (fixed v2.1) |
+| `debouncedSave` | 1698 | 800ms debounce — fires after input silence, not every keystroke |
+| `migrateOldDates` | 1381 | One-shot migration purging hardcoded dates from old sessions |
+| `setDefaultDates` | 1395 | End = today, Start = 3 months prior |
+| `checkPeriodWarning` | 1707 | Shows warning if date range < 1 month |
+| `validateZeroInputs` | 1717 | Yellow border on `blendRate`/`hoursPerDay` if zero |
+| `toggleTheme` / `loadTheme` | 1529 / 1611 | Dark/light + localStorage persistence |
+| `toggleCurrency` / `loadCurrency` | 1538 / 1618 | $/€ toggle + recalculate |
+| `initTooltips` | 1548 | Click/hover with 44px touch targets via `::after` pseudo-element |
+| `showToast` | 1405 | Toast notification |
+| `clearSavedData` | 1513 | Resets to `DEFAULTS` object (line 1364) |
 
 ### Constants
 
-- `CARRYING_RATE_MONTHLY = 0.02` (line 1384) — 2%/month ≈ 25%/year, standard inventory carrying cost
-- `DEFAULTS` (line 1386) — source of truth for all field defaults; `clearSavedData` reads from here
-- `SVG_SUN`, `SVG_MOON` (lines 1381–1382) — inline SVGs for theme toggle (`currentColor`-aware)
+- `CARRYING_RATE_MONTHLY = 0.02` (line 1362) — 2%/month ≈ 25%/year, standard inventory carrying cost
+- `DEFAULTS` (line 1364) — source of truth for all field defaults; `clearSavedData` reads from here
+- `SVG_SUN`, `SVG_MOON` (lines 1359–1360) — inline SVGs for theme toggle (`currentColor`-aware)
 
 ### localStorage keys
 
@@ -73,7 +73,7 @@ No abstraction for one caller, no unasked config, no future-proofing (add it the
 
 ### URL params
 
-All input IDs are used directly as param names: `blendRate`, `hoursPerDay`, `teamSizeStart`, `teamSizeEnd`, `workingDaysPerWeek`, `workingDaysPerMonth`, `startDate`, `endDate`, `throughputPrev`, `throughputCurr`, `leadTimePrev`, `leadTimeCurr`, `wipPrev`, `wipCurr`, `defectsPrev`, `defectsCurr`.
+All input IDs are used directly as param names: `blendRate`, `hoursPerDay`, `teamSizeStart`, `teamSizeEnd`, `workingDaysPerMonth`, `startDate`, `endDate`, `throughputPrev`, `throughputCurr`, `leadTimePrev`, `leadTimeCurr`, `wipPrev`, `wipCurr`, `defectsPrev`, `defectsCurr`.
 
 ### The 4 formulas (deliberately independent) + 1 memo line
 
@@ -165,7 +165,7 @@ Uses year/month arithmetic, not string subtraction, to be timezone-safe. This fi
 Do not link them through Little's Law or any shared derived variable. Independence prevents double-counting — intentional since v1 (Excel prototype).
 
 **G4 — `DEFAULTS` is the source of truth for reset.**  
-`clearSavedData` resets to `DEFAULTS` (line 1144). Every new input field must be added there or it won't clear correctly.
+`clearSavedData` resets to `DEFAULTS` (line 1513). Every new input field must be added there or it won't clear correctly.
 
 **G5 — `loadFromURL` takes priority over localStorage.**  
 URL params always win. Intentional — enables scenario sharing via link. Do not change this load order.

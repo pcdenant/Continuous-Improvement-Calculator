@@ -37,7 +37,7 @@ The four core dimensions are intentionally independent — not mathematically li
 * Blend Rate ($/hour or €/hour)
 * Hours per Day
 * Team Size — Start and End (a smaller, more focused team can outperform a larger one)
-* Working Days per Week / per Month
+* Working Days per Month
 
 **Improvement Period**
 
