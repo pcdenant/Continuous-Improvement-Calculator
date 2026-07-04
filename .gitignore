@@ -1,3 +1,1 @@
-.claude/skills/playwright-skill/node_modules/
-.claude/skills/playwright-skill/.temp-execution-*.js
-/tmp/playwright-test-*.js
+node_modules/
