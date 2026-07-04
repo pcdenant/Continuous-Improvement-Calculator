@@ -116,7 +116,7 @@ A shrinking team produces a positive value (cash saved); a growing team produces
 
 * **Positive values** = savings (shown in yellow)
 * **Negative values** = cost increase (shown in red) — the team got worse on that dimension
-* **Projected Annual** = period impact ÷ months × 12
+* **Projected Annual (×12)** = period impact ÷ months × 12 — an extrapolation, not a forecast. Period figures are observed; annual figures project them forward. The shorter the measured period, the more indicative (not predictive) the projection — a method note below the Total states this on the page itself
 * All four dimensions are independent — total impact is a sum, not a derived figure
 * **Headcount Cost Saving** is a memo line — it is not part of the sum
 
