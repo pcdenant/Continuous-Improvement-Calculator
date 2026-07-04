@@ -4,6 +4,22 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.11] — 2026-07-04
+
+### Fixed — Une seule histoire de démo (F7, RICE)
+
+* **`value=` HTML alignés sur `DEFAULTS`** : le premier chargement racontait une régression (throughput 50→40, defects 8→25, WIP 25→25) alors que « Clear Saved Data » racontait une amélioration (`DEFAULTS` : 40→52, 8→4, 22→15). Les 6 attributs divergents (`throughputPrev/Curr`, `leadTimeCurr`, `wipPrev/Curr`, `defectsCurr`) sont alignés sur `DEFAULTS` — cohérent avec l'intention v2.0 (« defaults plausibles d'amélioration au premier chargement »).
+
+### Tests
+
+* **`tests/ux-regression.js` — nouveau bloc `T20`** : pour chaque clé de `DEFAULTS`, l'attribut HTML `value` (statique — pas la valeur runtime, pour que localStorage/URL ne masquent pas une divergence) doit être ≡ `DEFAULTS`. Verrouille contre toute re-divergence.
+
+### Note
+
+* Zéro changement de formule — seuls les attributs par défaut changent ; snapshots A/B inchangés.
+
+---
+
 ## [v2.10] — 2026-07-04
 
 ### Removed — Input `workingDaysPerWeek` inutilisé (F8, RICE)

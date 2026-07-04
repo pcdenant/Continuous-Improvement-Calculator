@@ -771,6 +771,36 @@ function section(title) {
     await page.close();
 
     // ─────────────────────────────────────────────────────────
+    // T20 — HTML value= attributes mirror DEFAULTS (F7): first
+    // load and "Clear Saved Data" must tell the same demo story.
+    // Reads the static value attribute (not the runtime .value),
+    // so localStorage/URL loading can't mask a divergence.
+    // ─────────────────────────────────────────────────────────
+    section('T20 — HTML defaults mirror DEFAULTS (F7)');
+
+    const pageT20 = await browser.newPage();
+    await pageT20.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
+
+    const t20 = await pageT20.evaluate(() => {
+      const out = { defaults: DEFAULTS, attrs: {} };
+      Object.keys(DEFAULTS).forEach(id => {
+        const el = document.getElementById(id);
+        out.attrs[id] = el ? el.getAttribute('value') : null;
+      });
+      return out;
+    });
+
+    for (const [id, def] of Object.entries(t20.defaults)) {
+      const attr = t20.attrs[id];
+      if (attr !== null && parseFloat(attr) === def)
+        ok(`#${id} HTML value="${attr}" ≡ DEFAULTS.${id}`);
+      else
+        fail(`#${id} HTML value ≡ DEFAULTS.${id}`, `attribute "${attr}" vs DEFAULTS ${def}`);
+    }
+
+    await pageT20.close();
+
+    // ─────────────────────────────────────────────────────────
     // Summary
     // ─────────────────────────────────────────────────────────
     console.log('\n' + '─'.repeat(50));

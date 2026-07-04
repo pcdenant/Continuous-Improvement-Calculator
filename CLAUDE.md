@@ -165,7 +165,7 @@ Uses year/month arithmetic, not string subtraction, to be timezone-safe. This fi
 Do not link them through Little's Law or any shared derived variable. Independence prevents double-counting — intentional since v1 (Excel prototype).
 
 **G4 — `DEFAULTS` is the source of truth for reset.**  
-`clearSavedData` resets to `DEFAULTS` (line 1513). Every new input field must be added there or it won't clear correctly.
+`clearSavedData` resets to `DEFAULTS` (line 1513). Every new input field must be added there or it won't clear correctly. The HTML `value=` attributes must mirror `DEFAULTS` — first load and "Clear Saved Data" tell the same demo story (v2.11, F7) — enforced by ux-regression `T20`.
 
 **G5 — `loadFromURL` takes priority over localStorage.**  
 URL params always win. Intentional — enables scenario sharing via link. Do not change this load order.
