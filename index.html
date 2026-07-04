@@ -228,12 +228,18 @@
 
         .period-warning {
             font-size: 0.75rem;
-            color: var(--yellow);
-            background: rgba(255, 242, 0, 0.1);
-            border: 1px solid rgba(255, 242, 0, 0.3);
+            color: #6b5d00; /* dark amber — yellow-on-cream fails WCAG AA in light theme */
+            background: rgba(255, 242, 0, 0.12);
+            border: 1px solid rgba(184, 166, 0, 0.5);
             border-radius: 8px;
             padding: 0.4rem 0.75rem;
             margin-top: 0.5rem;
+        }
+
+        [data-theme="dark"] .period-warning {
+            color: var(--yellow);
+            background: rgba(255, 242, 0, 0.1);
+            border-color: rgba(255, 242, 0, 0.3);
         }
 
         input.input-zero {

@@ -4,6 +4,18 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.13] — 2026-07-04
+
+### Fixed — Contraste du warning de période en thème clair
+
+* **`.period-warning` illisible en clair** : texte `var(--yellow)` (#FFF200) sur fond crème — contraste largement sous le seuil WCAG AA. Le style de base passe en ambre foncé (`#6b5d00`, ≈ 5.8:1 sur le fond du bandeau) avec bordure renforcée ; un override `[data-theme="dark"] .period-warning` conserve à l'identique le rendu jaune du thème sombre (pattern d'override par composant déjà utilisé pour `header`).
+
+### Note
+
+* CSS uniquement — aucune logique touchée ; `input.input-zero` utilise aussi la bordure jaune en clair (signal visuel, pas du texte) — laissé tel quel, à traiter si gênant.
+
+---
+
 ## [v2.12] — 2026-07-04
 
 ### Added — Observé vs extrapolé (F3, RICE — absorbe F9)
