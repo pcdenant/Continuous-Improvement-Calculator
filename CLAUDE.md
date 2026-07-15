@@ -38,34 +38,35 @@ No abstraction for one caller, no unasked config, no future-proofing (add it the
 
 | Function | Line | Role |
 |---|---|---|
-| `calculate` | 1820 | Main orchestrator — reads all inputs, calls 5 pure calc fns (4 dimensions + 1 memo), updates DOM |
-| `calcProductivity` | 1741 | Pure calc: returns `{ period, annual }` |
-| `calcTTM` | 1747 | Pure calc: returns `{ period, annual }` |
-| `calcEfficiency` | 1752 | Pure calc: returns `{ period, annual }` |
-| `calcQuality` | 1757 | Pure calc: returns `{ period, annual }` |
-| `calcHeadcountSaving` | 1762 | Pure calc: returns `{ period, annual }` — memo line, excluded from Total (see formulas below) |
-| `updateDimensionDisplay` | 1767 | DOM update helper — avoids 4× (now 5×) repeated DOM pattern |
-| `getAllValues` | 1431 | Serializes all inputs to JS object |
-| `setAllValues` | 1452 | Fills inputs from object |
-| `loadFromURL` | 1485 | URL params → inputs (takes priority over localStorage) |
-| `generateShareableURL` | 1499 | Encodes all inputs as query string |
-| `calculateMonths` | 1658 | Timezone-safe month diff (fixed v2.1) |
-| `debouncedSave` | 1714 | 800ms debounce — fires after input silence, not every keystroke |
-| `migrateOldDates` | 1397 | One-shot migration purging hardcoded dates from old sessions |
-| `setDefaultDates` | 1411 | End = today, Start = 3 months prior |
-| `checkPeriodWarning` | 1723 | Shows warning if date range < 1 month |
-| `validateZeroInputs` | 1733 | Yellow border on `blendRate`/`hoursPerDay` if zero |
-| `toggleTheme` / `loadTheme` | 1545 / 1627 | Dark/light + localStorage persistence |
-| `toggleCurrency` / `loadCurrency` | 1554 / 1634 | $/€ toggle + recalculate |
-| `initTooltips` | 1564 | Click/hover with 44px touch targets via `::after` pseudo-element |
-| `showToast` | 1421 | Toast notification |
-| `clearSavedData` | 1529 | Resets to `DEFAULTS` object (line 1380) |
+| `calculate` | 1889 | Main orchestrator — reads all inputs, calls 5 pure calc fns (4 dimensions + 1 memo), updates DOM |
+| `calcProductivity` | 1805 | Pure calc: returns `{ period, annual }` |
+| `calcTTM` | 1811 | Pure calc: returns `{ period, annual }` |
+| `calcEfficiency` | 1816 | Pure calc: returns `{ period, annual }` |
+| `calcQuality` | 1821 | Pure calc: returns `{ period, annual }` |
+| `calcHeadcountSaving` | 1826 | Pure calc: returns `{ period, annual }` — memo line, excluded from Total (see formulas below) |
+| `updateDimensionDisplay` | 1831 | DOM update helper — avoids 4× (now 5×) repeated DOM pattern |
+| `updateSubtotalDisplay` | 1839 | DOM update helper for category sub-totals (Avoidance / Working Capital) — pure display sums, no Item/Improvement styling (v2.14) |
+| `getAllValues` | 1495 | Serializes all inputs to JS object |
+| `setAllValues` | 1516 | Fills inputs from object |
+| `loadFromURL` | 1549 | URL params → inputs (takes priority over localStorage) |
+| `generateShareableURL` | 1563 | Encodes all inputs as query string |
+| `calculateMonths` | 1722 | Timezone-safe month diff (fixed v2.1) |
+| `debouncedSave` | 1778 | 800ms debounce — fires after input silence, not every keystroke |
+| `migrateOldDates` | 1461 | One-shot migration purging hardcoded dates from old sessions |
+| `setDefaultDates` | 1475 | End = today, Start = 3 months prior |
+| `checkPeriodWarning` | 1787 | Shows warning if date range < 1 month |
+| `validateZeroInputs` | 1797 | Yellow border on `blendRate`/`hoursPerDay` if zero |
+| `toggleTheme` / `loadTheme` | 1609 / 1691 | Dark/light + localStorage persistence |
+| `toggleCurrency` / `loadCurrency` | 1618 / 1698 | $/€ toggle + recalculate |
+| `initTooltips` | 1628 | Click/hover with 44px touch targets via `::after` pseudo-element |
+| `showToast` | 1485 | Toast notification |
+| `clearSavedData` | 1593 | Resets to `DEFAULTS` object (line 1444) |
 
 ### Constants
 
-- `CARRYING_RATE_MONTHLY = 0.02` (line 1378) — 2%/month ≈ 25%/year, standard inventory carrying cost
-- `DEFAULTS` (line 1380) — source of truth for all field defaults; `clearSavedData` reads from here
-- `SVG_SUN`, `SVG_MOON` (lines 1375–1376) — inline SVGs for theme toggle (`currentColor`-aware)
+- `CARRYING_RATE_MONTHLY = 0.02` (line 1442) — 2%/month ≈ 25%/year, standard inventory carrying cost
+- `DEFAULTS` (line 1444) — source of truth for all field defaults; `clearSavedData` reads from here
+- `SVG_SUN`, `SVG_MOON` (lines 1439–1440) — inline SVGs for theme toggle (`currentColor`-aware)
 
 ### localStorage keys
 
@@ -132,6 +133,8 @@ Inputs: `blendRate=100, hoursPerDay=8, teamSizeStart=5, teamSizeEnd=5, workingDa
 | Efficiency | 480 $ | 1 920 $ |
 | Quality | 19 200 $ | 76 800 $ |
 | Headcount (memo, hidden — team unchanged) | 0 $ | 0 $ |
+| *Sub-total Cost Avoidance (Prod+TTM+Quality, display-only, v2.14)* | *139 200 $* | *556 800 $* |
+| *Sub-total Working Capital (Efficiency, display-only, v2.14)* | *480 $* | *1 920 $* |
 | **Total** | **139 680 $** | **558 720 $** |
 
 ### Regression snapshot — Scenario B (v2.8 baseline, headcount reduced)
@@ -145,6 +148,8 @@ Same inputs as Scenario A except `teamSizeStart=7` (team reduced 7→5).
 | Efficiency | 480 $ (unchanged from A) | 1 920 $ |
 | Quality | 19 200 $ (unchanged from A) | 76 800 $ |
 | Headcount (memo) | 96 000 $ | 384 000 $ |
+| *Sub-total Cost Avoidance (display-only, v2.14)* | *259 200 $* | *1 036 800 $* |
+| *Sub-total Working Capital (display-only, v2.14)* | *480 $* | *1 920 $* |
 | **Total** | **259 680 $** | **1 038 720 $** |
 
 Only Productivity and Headcount move between A and B — `teamSizeStart` feeds `costPerItemPrev` (via `monthlyCostStart`), which only Productivity consumes; TTM/Efficiency/Quality depend on `teamSizeEnd`/`costPerItemCurr` only, unchanged between the two scenarios. This is the G9 double-counting mechanism, locked down as a test assertion.
@@ -165,7 +170,7 @@ Uses year/month arithmetic, not string subtraction, to be timezone-safe. This fi
 Do not link them through Little's Law or any shared derived variable. Independence prevents double-counting — intentional since v1 (Excel prototype).
 
 **G4 — `DEFAULTS` is the source of truth for reset.**  
-`clearSavedData` resets to `DEFAULTS` (line 1523). Every new input field must be added there or it won't clear correctly. The HTML `value=` attributes must mirror `DEFAULTS` — first load and "Clear Saved Data" tell the same demo story (v2.11, F7) — enforced by ux-regression `T20`.
+`clearSavedData` resets to `DEFAULTS` (line 1593). Every new input field must be added there or it won't clear correctly. The HTML `value=` attributes must mirror `DEFAULTS` — first load and "Clear Saved Data" tell the same demo story (v2.11, F7) — enforced by ux-regression `T20`.
 
 **G5 — `loadFromURL` takes priority over localStorage.**  
 URL params always win. Intentional — enables scenario sharing via link. Do not change this load order.
@@ -180,8 +185,8 @@ Purges hardcoded dates (`2024-08-01` / `2025-01-31`) from stale localStorage ses
 Current `DOMContentLoaded` call order: `migrateOldDates` → `loadFromLocalStorage` → `loadFromURL` → `setDefaultDates`. Reversing `loadFromLocalStorage` and `setDefaultDates` was the original v1.8 bug.
 
 **G9 — `calcHeadcountSaving` is a memo line, never add it to `totalPeriod`/`totalAnnual`.**  
-It reuses `teamSizeStart`/`teamSizeEnd`, which already feed `costPerItemCurr` and therefore `calcProductivity`. Summing both into the Total would double-count a real headcount reduction. It is deliberately excluded from the sum and labeled "Memo — not included in Total" on its `dim-row-annual` line (v2.7). Do not "fix" this by adding it to the Total without also removing team size from Productivity's cost-per-item math — that's a bigger, separate change (see backlog item "Restructure results into Cost Saving / Cost Avoidance / Working-Capital sub-totals"). `#headcountItem` is also hidden (`display: none`) whenever `headcountSaving.period === 0` (team size unchanged) — there's nothing to disclose in that case; the Breakdown tab stays available regardless.
+It reuses `teamSizeStart`/`teamSizeEnd`, which already feed `costPerItemCurr` and therefore `calcProductivity`. Summing both into the Total would double-count a real headcount reduction. It is deliberately excluded from the sum and labeled "Memo — not included in Total" on its `dim-row-annual` line (v2.7). Do not "fix" this by adding it to the Total without also removing team size from Productivity's cost-per-item math — that's a bigger, separate change to treat apart if ever requested. Since v2.14 results are grouped in 3 category groups with display-only sub-totals (`#avoidanceGroup` = Prod+TTM+Quality, `#workingCapitalGroup` = Efficiency, `#costSavingGroup` = Headcount memo); the sub-totals are presentation sums, the Total is still the 4-dimension sum. The zero-headcount hiding moved from `#headcountItem` to the `#costSavingGroup` wrapper (`display: none` whenever `headcountSaving.period === 0`, team size unchanged) — there's nothing to disclose in that case; the Breakdown tab stays available regardless.
 
 ---
 
-*Updated: 2026-07-03*
+*Updated: 2026-07-15*

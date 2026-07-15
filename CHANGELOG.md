@@ -4,6 +4,22 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.14] — 2026-07-15
+
+### Added — Sous-totaux par catégorie financière (F2, F5, RICE)
+
+* **Résultats regroupés en 3 catégories** avec header et sous-total chacun : **Cost Avoidance** (Productivity + Time-to-Market + Quality), **Working Capital** (Efficiency/WIP), **Cost Saving — memo, not in Total** (Headcount). L'ordre visuel change : Quality remonte avant Efficiency pour rejoindre son groupe.
+* **Nouveau helper `updateSubtotalDisplay(prefix, period, annual)`** — même pattern que `updateDimensionDisplay`, sans styling Item/Improvement. Les sous-totaux sont de pures sommes d'affichage des résultats existants.
+* **Périmètre présentation seule** : aucune formule modifiée, Total inchangé (somme des 4 dimensions), memo Headcount toujours exclu (G9). Le masquage du memo (headcount = 0) passe de `#headcountItem` au wrapper `#costSavingGroup` (header + ligne cachés ensemble).
+
+### Tests
+
+* **`tests/ux-regression.js` — nouveau bloc `T22`** : présence des 3 groupes et labels, sous-totaux exacts sur Scénario A (Avoidance 139 200 $ / 556 800 $, Working Capital 480 $ / 1 920 $) et Scénario B (Avoidance 259 200 $ / 1 036 800 $, memo 96 000 $ visible), Total inchangé dans les deux scénarios.
+* **`T18` adapté** : les 3 assertions de visibilité ciblent `#costSavingGroup` au lieu de `#headcountItem`.
+* `tests/formula-regression.js` intouché — snapshots A/B inchangés.
+
+---
+
 ## [v2.13] — 2026-07-04
 
 ### Fixed — Contraste du warning de période en thème clair

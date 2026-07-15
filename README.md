@@ -10,15 +10,15 @@ A single-file web tool that translates flow metrics into financial impact for le
 
 Enter your team's flow metrics at the start and end of an improvement period. The calculator converts the delta into dollar (or euro) savings across four independent dimensions, plus one memo line:
 
-| Dimension | Leadership framing |
-| --- | --- |
-| Productivity | Delivery Cost Reduction |
-| Time-to-Market | Revenue Acceleration |
-| Efficiency (WIP) | Carrying Cost Reduction |
-| Quality | Rework Cost Elimination |
-| Headcount Cost Saving (memo) | Headcount Cash Saving — not included in Total |
+| Dimension | Leadership framing | Financial category |
+| --- | --- | --- |
+| Productivity | Delivery Cost Reduction | Cost Avoidance |
+| Time-to-Market | Revenue Acceleration | Cost Avoidance |
+| Efficiency (WIP) | Carrying Cost Reduction | Working Capital |
+| Quality | Rework Cost Elimination | Cost Avoidance |
+| Headcount Cost Saving (memo) | Headcount Cash Saving — not included in Total | Cost Saving |
 
-Each dimension shows the impact over the measured period and a projected annual figure.
+Each dimension shows the impact over the measured period and a projected annual figure. Results are grouped on screen by financial category — **Cost Avoidance** (Productivity + Time-to-Market + Quality), **Working Capital** (Efficiency) and **Cost Saving** (Headcount memo) — each with its own sub-total, because a CFO reads these three categories very differently: avoided cost is not cash, working-capital relief is not margin, and only a real headcount reduction is money that leaves the budget. Sub-totals are presentation-level sums; the Total remains the sum of the four core dimensions.
 
 ---
 
