@@ -1377,6 +1377,14 @@
 
         const CARRYING_RATE_MONTHLY = 0.02; // 2%/month ≈ 25%/year — standard inventory carrying cost
 
+        const DIMENSION_CATEGORY = {
+            productivity: 'Cost Avoidance',
+            timeToMarket: 'Cost Avoidance',
+            efficiency: 'Working Capital',
+            quality: 'Cost Avoidance',
+            headcount: 'Cost Saving',
+        };
+
         const DEFAULTS = {
             blendRate: 125,
             hoursPerDay: 6.5,
@@ -1767,7 +1775,7 @@
         function updateDimensionDisplay(prefix, period, annual, improvement) {
             document.getElementById(`${prefix}Period`).textContent = formatCurrency(period);
             document.getElementById(`${prefix}Improvement`).textContent = formatPercentage(improvement);
-            document.getElementById(`${prefix}Annual`).textContent = `Projected Annual (×12): ${formatCurrency(annual)}`;
+            document.getElementById(`${prefix}Annual`).textContent = `${DIMENSION_CATEGORY[prefix]} · Projected Annual (×12): ${formatCurrency(annual)}`;
             updateItemStyle(document.getElementById(`${prefix}Item`), period);
             updateImprovementStyle(document.getElementById(`${prefix}Improvement`), improvement);
         }
@@ -1868,8 +1876,9 @@
             updateDimensionDisplay('efficiency', efficiency.period, efficiency.annual, wipImprovement);
             updateDimensionDisplay('quality', quality.period, quality.annual, qualityImprovement);
             updateDimensionDisplay('headcount', headcountSaving.period, headcountSaving.annual, headcountImprovement);
-            document.getElementById('headcountAnnual').textContent = 'Memo — not included in Total';
+            document.getElementById('headcountAnnual').textContent = `${DIMENSION_CATEGORY.headcount} · Memo — not included in Total`;
             document.getElementById('headcountItem').style.display = headcountSaving.period === 0 ? 'none' : 'flex';
+
             pulseDimValue('productivityPeriod');
             pulseDimValue('timeToMarketPeriod');
             pulseDimValue('efficiencyPeriod');

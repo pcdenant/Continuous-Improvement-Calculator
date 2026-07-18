@@ -587,7 +587,7 @@ function section(title) {
     else
       fail('#headcountItem visible when non-zero', 'display: none');
 
-    if (memoStyling.annualText === 'Memo — not included in Total')
+    if (memoStyling.annualText === 'Cost Saving · Memo — not included in Total')
       ok(`#headcountAnnual shows memo text: "${memoStyling.annualText}"`);
     else
       fail('#headcountAnnual shows memo text', `got "${memoStyling.annualText}"`);
@@ -824,7 +824,7 @@ function section(title) {
       fail('Total hero label marks the period figure as observed', `got "${t21.heroLabel}"`);
 
     for (const { id, text } of t21.annualLabels) {
-      if (text.startsWith('Projected Annual (×12):'))
+      if (text.includes('Projected Annual (×12):'))
         ok(`#${id} labeled as ×12 extrapolation`);
       else
         fail(`#${id} labeled as ×12 extrapolation`, `got "${text}"`);
@@ -836,6 +836,106 @@ function section(title) {
       fail('Method note present with ×12 + short-period caution (F9)', `got "${t21.note}"`);
 
     await pageT21.close();
+
+    // ─────────────────────────────────────────────────────────
+    // T22 — Inline category labels, flat list (F2, F5, corrects v2.14):
+    // no wrapping section/header/sub-total — each dimension's own
+    // annual line is prefixed with its financial category instead.
+    // Uses the exact CLAUDE.md Scenario A / B values.
+    // ─────────────────────────────────────────────────────────
+    section('T22 — Inline category labels, flat summary list (F2, F5)');
+
+    const pageT22 = await browser.newPage();
+    await pageT22.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
+
+    const scenarioA = {
+      blendRate: '100', hoursPerDay: '8', teamSizeStart: '5', teamSizeEnd: '5',
+      workingDaysPerMonth: '20', startDate: '2026-01-01', endDate: '2026-04-01',
+      throughputPrev: '40', throughputCurr: '50', leadTimePrev: '45', leadTimeCurr: '40',
+      wipPrev: '25', wipCurr: '20', defectsPrev: '10', defectsCurr: '6',
+    };
+    for (const [id, value] of Object.entries(scenarioA)) await pageT22.fill(`#${id}`, value);
+    await pageT22.dispatchEvent('#defectsCurr', 'input');
+    await pageT22.waitForTimeout(700);
+
+    const t22a = await pageT22.evaluate(() => ({
+      noGroups: ['avoidanceGroup', 'workingCapitalGroup', 'costSavingGroup', 'avoidancePeriod', 'workingCapitalPeriod']
+        .every(id => !document.getElementById(id)),
+      noCategoryHeader: document.querySelectorAll('.category-header, .category-group').length === 0,
+      productivityAnnual: document.getElementById('productivityAnnual').textContent,
+      timeToMarketAnnual: document.getElementById('timeToMarketAnnual').textContent,
+      efficiencyAnnual: document.getElementById('efficiencyAnnual').textContent,
+      qualityAnnual: document.getElementById('qualityAnnual').textContent,
+      totalPeriod: document.getElementById('totalPeriod').textContent,
+      headcountDisplay: getComputedStyle(document.getElementById('headcountItem')).display,
+      expTotal: window.formatCurrency(139680),
+    }));
+
+    if (t22a.noGroups)
+      ok('No leftover category-group wrapper elements (flat list restored)');
+    else
+      fail('No leftover category-group wrapper elements', 'a v2.14 group/subtotal id still exists in the DOM');
+
+    if (t22a.noCategoryHeader)
+      ok('No .category-header / .category-group elements in the DOM');
+    else
+      fail('No .category-header / .category-group elements in the DOM', 'leftover grouping markup found');
+
+    const expectedCategory = {
+      productivityAnnual: 'Cost Avoidance',
+      timeToMarketAnnual: 'Cost Avoidance',
+      efficiencyAnnual: 'Working Capital',
+      qualityAnnual: 'Cost Avoidance',
+    };
+    for (const [id, category] of Object.entries(expectedCategory)) {
+      const text = t22a[id];
+      if (text.startsWith(`${category} · Projected Annual (×12):`))
+        ok(`#${id} prefixed with its category ("${category}")`);
+      else
+        fail(`#${id} prefixed with its category`, `got "${text}"`);
+    }
+
+    if (t22a.totalPeriod === t22a.expTotal)
+      ok(`Scenario A: Total unaffected by the category label change (${t22a.totalPeriod})`);
+    else
+      fail('Scenario A: Total unaffected by the category label change', `got "${t22a.totalPeriod}", expected "${t22a.expTotal}"`);
+
+    if (t22a.headcountDisplay === 'none')
+      ok('Scenario A: #headcountItem hidden (team size unchanged)');
+    else
+      fail('Scenario A: #headcountItem hidden', `got display: ${t22a.headcountDisplay}`);
+
+    // Scenario B — team reduced 7→5: headcount memo row appears with
+    // its own "Cost Saving ·" prefix, Total still excludes it.
+    await pageT22.fill('#teamSizeStart', '7');
+    await pageT22.dispatchEvent('#teamSizeStart', 'input');
+    await pageT22.waitForTimeout(700);
+
+    const t22b = await pageT22.evaluate(() => ({
+      headcountDisplay: getComputedStyle(document.getElementById('headcountItem')).display,
+      headcountAnnual: document.getElementById('headcountAnnual').textContent,
+      headcountPeriod: document.getElementById('headcountPeriod').textContent,
+      totalPeriod: document.getElementById('totalPeriod').textContent,
+      expHeadcount: window.formatCurrency(96000),
+      expTotal: window.formatCurrency(259680),
+    }));
+
+    if (t22b.headcountDisplay !== 'none' && t22b.headcountPeriod === t22b.expHeadcount)
+      ok(`Scenario B: #headcountItem visible with memo value (${t22b.headcountPeriod})`);
+    else
+      fail('Scenario B: #headcountItem visible with memo value', `display: ${t22b.headcountDisplay}, value "${t22b.headcountPeriod}"`);
+
+    if (t22b.headcountAnnual === 'Cost Saving · Memo — not included in Total')
+      ok(`Scenario B: #headcountAnnual prefixed with "Cost Saving" ("${t22b.headcountAnnual}")`);
+    else
+      fail('Scenario B: #headcountAnnual prefixed with "Cost Saving"', `got "${t22b.headcountAnnual}"`);
+
+    if (t22b.totalPeriod === t22b.expTotal)
+      ok(`Scenario B: Total still excludes the Cost Saving memo (${t22b.totalPeriod})`);
+    else
+      fail('Scenario B: Total still excludes the Cost Saving memo', `got "${t22b.totalPeriod}", expected "${t22b.expTotal}"`);
+
+    await pageT22.close();
 
     // ─────────────────────────────────────────────────────────
     // Summary

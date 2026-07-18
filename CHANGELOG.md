@@ -4,6 +4,23 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.14] — 2026-07-15
+
+### Added — Étiquette de catégorie financière par ligne (F2, F5, RICE)
+
+* **Chaque dimension affiche sa catégorie financière** en préfixe de sa ligne annuelle existante : **Cost Avoidance** (Productivity, Time-to-Market, Quality), **Working Capital** (Efficiency/WIP), **Cost Saving** (Headcount memo) — ex. `Cost Avoidance · Projected Annual (×12): $240,000`. Un premier essai avec 3 sections groupées (header + sous-total dupliqué par catégorie) s'est avéré confus à la lecture ; retenu à la place : la liste plate à 5 lignes reste inchangée dans sa structure, seule la ligne secondaire déjà existante porte le libellé de catégorie — zéro chiffre dupliqué, zéro niveau visuel supplémentaire.
+* **Nouvelle constante `DIMENSION_CATEGORY`** (prefix → libellé finance), lue par `updateDimensionDisplay` et par la ligne memo Headcount dans `calculate()`.
+* **Périmètre présentation seule** : aucune formule modifiée, Total inchangé (somme des 4 dimensions), memo Headcount toujours exclu (G9) et son masquage (headcount = 0) reste directement sur `#headcountItem`, comme avant.
+
+### Tests
+
+* **`tests/ux-regression.js` — bloc `T22`** : confirme l'absence de toute structure de groupe/sous-total, et que chaque ligne annuelle (les 4 dimensions + le memo Headcount) est préfixée par sa catégorie, sur les Scénarios A et B de CLAUDE.md. Total inchangé dans les deux scénarios.
+* **`T18`** : assertions de visibilité sur `#headcountItem` directement.
+* **`T21`** : assertion sur les libellés `Projected Annual (×12):` passée de `startsWith` à `includes`, puisque le texte commence désormais par la catégorie.
+* `tests/formula-regression.js` intouché — snapshots A/B inchangés.
+
+---
+
 ## [v2.13] — 2026-07-04
 
 ### Fixed — Contraste du warning de période en thème clair
