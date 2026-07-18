@@ -344,45 +344,6 @@
             text-align: right;
         }
 
-        .category-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .category-group + .category-group {
-            margin-top: 0.875rem;
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.5rem 1rem 0.4rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-        }
-
-        .category-header-left {
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-        }
-
-        .category-header-label {
-            font-size: 0.6875rem;
-            font-family: 'JetBrains Mono', monospace;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            font-weight: 600;
-            color: var(--yellow);
-        }
-
-        .category-subtotal {
-            font-size: 0.9375rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.85);
-        }
-
         .tooltip-trigger {
             display: inline-flex;
             align-items: center;
@@ -1099,14 +1060,6 @@
             <h2 class="section-title" id="summaryTitle">Period Savings Summary</h2>
 
             <div class="summary-grid">
-                <div class="category-group" id="avoidanceGroup">
-                <div class="category-header">
-                    <div class="category-header-left">
-                        <div class="category-header-label">Cost Avoidance</div>
-                        <div class="dim-row-annual" id="avoidanceAnnual">Projected Annual (×12): 0$</div>
-                    </div>
-                    <span class="category-subtotal" id="avoidancePeriod">0$</span>
-                </div>
                 <div class="dim-row" id="productivityItem">
                     <div class="dim-row-left">
                         <div class="dim-row-label">
@@ -1159,6 +1112,30 @@
                     </div>
                 </div>
 
+                <div class="dim-row" id="efficiencyItem">
+                    <div class="dim-row-left">
+                        <div class="dim-row-label">
+                            <span class="tooltip-trigger">
+                                <span>Efficiency (WIP)</span>
+                                <span class="tooltip-icon">?</span>
+                                <div class="tooltip-content">
+                                    <div class="tooltip-title">Why this number moves</div>
+                                    <div class="tooltip-text">WIP is inventory. High WIP means carrying cost and delivery risk. Reducing it lowers financial exposure.</div>
+                                    <div class="tooltip-blockers">
+                                        <div class="tooltip-blockers-title">Blockers</div>
+                                        <div class="tooltip-blockers-list">• No WIP limits: everyone starts, nobody finishes<br>• Invisible work not tracked (bugs, support, side requests)<br>• No mechanism to say no to new requests mid-sprint</div>
+                                    </div>
+                                </div>
+                            </span>
+                        </div>
+                        <div class="dim-row-annual" id="efficiencyAnnual">Projected Annual (×12): 0$</div>
+                    </div>
+                    <div class="dim-row-right">
+                        <span class="summary-value" id="efficiencyPeriod">0$</span>
+                        <span class="summary-improvement" id="efficiencyImprovement">0%</span>
+                    </div>
+                </div>
+
                 <div class="dim-row" id="qualityItem">
                     <div class="dim-row-left">
                         <div class="dim-row-label">
@@ -1186,40 +1163,6 @@
                         <span class="summary-improvement" id="qualityImprovement">0%</span>
                     </div>
                 </div>
-                </div>
-
-                <div class="category-group" id="workingCapitalGroup">
-                <div class="category-header">
-                    <div class="category-header-left">
-                        <div class="category-header-label">Working Capital</div>
-                        <div class="dim-row-annual" id="workingCapitalAnnual">Projected Annual (×12): 0$</div>
-                    </div>
-                    <span class="category-subtotal" id="workingCapitalPeriod">0$</span>
-                </div>
-                <div class="dim-row" id="efficiencyItem">
-                    <div class="dim-row-left">
-                        <div class="dim-row-label">
-                            <span class="tooltip-trigger">
-                                <span>Efficiency (WIP)</span>
-                                <span class="tooltip-icon">?</span>
-                                <div class="tooltip-content">
-                                    <div class="tooltip-title">Why this number moves</div>
-                                    <div class="tooltip-text">WIP is inventory. High WIP means carrying cost and delivery risk. Reducing it lowers financial exposure.</div>
-                                    <div class="tooltip-blockers">
-                                        <div class="tooltip-blockers-title">Blockers</div>
-                                        <div class="tooltip-blockers-list">• No WIP limits: everyone starts, nobody finishes<br>• Invisible work not tracked (bugs, support, side requests)<br>• No mechanism to say no to new requests mid-sprint</div>
-                                    </div>
-                                </div>
-                            </span>
-                        </div>
-                        <div class="dim-row-annual" id="efficiencyAnnual">Projected Annual (×12): 0$</div>
-                    </div>
-                    <div class="dim-row-right">
-                        <span class="summary-value" id="efficiencyPeriod">0$</span>
-                        <span class="summary-improvement" id="efficiencyImprovement">0%</span>
-                    </div>
-                </div>
-                </div>
             </div>
 
             <div class="total-hero" id="totalItem">
@@ -1229,12 +1172,6 @@
                 <div class="method-note" id="methodNote">Period figures are observed over the selected date range. Annual figures extrapolate that period ×12 — the shorter the period, the more indicative (not predictive) the projection.</div>
             </div>
 
-            <div class="category-group" id="costSavingGroup">
-            <div class="category-header">
-                <div class="category-header-left">
-                    <div class="category-header-label">Cost Saving — memo, not in Total</div>
-                </div>
-            </div>
             <div class="dim-row dim-row-memo" id="headcountItem">
                 <div class="dim-row-left">
                     <div class="dim-row-label">
@@ -1261,7 +1198,6 @@
                     <span class="summary-value" id="headcountPeriod">0$</span>
                     <span class="summary-improvement" id="headcountImprovement">0%</span>
                 </div>
-            </div>
             </div>
 
             <div class="action-buttons">
@@ -1440,6 +1376,14 @@
         const SVG_MOON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 
         const CARRYING_RATE_MONTHLY = 0.02; // 2%/month ≈ 25%/year — standard inventory carrying cost
+
+        const DIMENSION_CATEGORY = {
+            productivity: 'Cost Avoidance',
+            timeToMarket: 'Cost Avoidance',
+            efficiency: 'Working Capital',
+            quality: 'Cost Avoidance',
+            headcount: 'Cost Saving',
+        };
 
         const DEFAULTS = {
             blendRate: 125,
@@ -1831,14 +1775,9 @@
         function updateDimensionDisplay(prefix, period, annual, improvement) {
             document.getElementById(`${prefix}Period`).textContent = formatCurrency(period);
             document.getElementById(`${prefix}Improvement`).textContent = formatPercentage(improvement);
-            document.getElementById(`${prefix}Annual`).textContent = `Projected Annual (×12): ${formatCurrency(annual)}`;
+            document.getElementById(`${prefix}Annual`).textContent = `${DIMENSION_CATEGORY[prefix]} · Projected Annual (×12): ${formatCurrency(annual)}`;
             updateItemStyle(document.getElementById(`${prefix}Item`), period);
             updateImprovementStyle(document.getElementById(`${prefix}Improvement`), improvement);
-        }
-
-        function updateSubtotalDisplay(prefix, period, annual) {
-            document.getElementById(`${prefix}Period`).textContent = formatCurrency(period);
-            document.getElementById(`${prefix}Annual`).textContent = `Projected Annual (×12): ${formatCurrency(annual)}`;
         }
 
         function animateCounter(targetValue) {
@@ -1937,12 +1876,9 @@
             updateDimensionDisplay('efficiency', efficiency.period, efficiency.annual, wipImprovement);
             updateDimensionDisplay('quality', quality.period, quality.annual, qualityImprovement);
             updateDimensionDisplay('headcount', headcountSaving.period, headcountSaving.annual, headcountImprovement);
-            document.getElementById('headcountAnnual').textContent = 'Memo — not included in Total';
-            document.getElementById('costSavingGroup').style.display = headcountSaving.period === 0 ? 'none' : 'flex';
+            document.getElementById('headcountAnnual').textContent = `${DIMENSION_CATEGORY.headcount} · Memo — not included in Total`;
+            document.getElementById('headcountItem').style.display = headcountSaving.period === 0 ? 'none' : 'flex';
 
-            updateSubtotalDisplay('avoidance', productivity.period + ttm.period + quality.period,
-                productivity.annual + ttm.annual + quality.annual);
-            updateSubtotalDisplay('workingCapital', efficiency.period, efficiency.annual);
             pulseDimValue('productivityPeriod');
             pulseDimValue('timeToMarketPeriod');
             pulseDimValue('efficiencyPeriod');

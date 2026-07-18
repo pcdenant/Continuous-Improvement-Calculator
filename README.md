@@ -18,7 +18,7 @@ Enter your team's flow metrics at the start and end of an improvement period. Th
 | Quality | Rework Cost Elimination | Cost Avoidance |
 | Headcount Cost Saving (memo) | Headcount Cash Saving — not included in Total | Cost Saving |
 
-Each dimension shows the impact over the measured period and a projected annual figure. Results are grouped on screen by financial category — **Cost Avoidance** (Productivity + Time-to-Market + Quality), **Working Capital** (Efficiency) and **Cost Saving** (Headcount memo) — each with its own sub-total, because a CFO reads these three categories very differently: avoided cost is not cash, working-capital relief is not margin, and only a real headcount reduction is money that leaves the budget. Sub-totals are presentation-level sums; the Total remains the sum of the four core dimensions.
+Each dimension shows the impact over the measured period and a projected annual figure, plus which financial category it belongs to — a CFO reads these three categories very differently: avoided cost is not cash, working-capital relief is not margin, and only a real headcount reduction is money that leaves the budget. The category appears inline on each row's annual line (e.g. "Cost Avoidance · Projected Annual (×12): $240,000") rather than as a separate grouped section, so the summary stays a flat, scannable list — no duplicated numbers, no extra visual levels.
 
 ---
 

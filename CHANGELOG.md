@@ -6,16 +6,17 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ## [v2.14] — 2026-07-15
 
-### Added — Sous-totaux par catégorie financière (F2, F5, RICE)
+### Added — Étiquette de catégorie financière par ligne (F2, F5, RICE)
 
-* **Résultats regroupés en 3 catégories** avec header et sous-total chacun : **Cost Avoidance** (Productivity + Time-to-Market + Quality), **Working Capital** (Efficiency/WIP), **Cost Saving — memo, not in Total** (Headcount). L'ordre visuel change : Quality remonte avant Efficiency pour rejoindre son groupe.
-* **Nouveau helper `updateSubtotalDisplay(prefix, period, annual)`** — même pattern que `updateDimensionDisplay`, sans styling Item/Improvement. Les sous-totaux sont de pures sommes d'affichage des résultats existants.
-* **Périmètre présentation seule** : aucune formule modifiée, Total inchangé (somme des 4 dimensions), memo Headcount toujours exclu (G9). Le masquage du memo (headcount = 0) passe de `#headcountItem` au wrapper `#costSavingGroup` (header + ligne cachés ensemble).
+* **Chaque dimension affiche sa catégorie financière** en préfixe de sa ligne annuelle existante : **Cost Avoidance** (Productivity, Time-to-Market, Quality), **Working Capital** (Efficiency/WIP), **Cost Saving** (Headcount memo) — ex. `Cost Avoidance · Projected Annual (×12): $240,000`. Un premier essai avec 3 sections groupées (header + sous-total dupliqué par catégorie) s'est avéré confus à la lecture ; retenu à la place : la liste plate à 5 lignes reste inchangée dans sa structure, seule la ligne secondaire déjà existante porte le libellé de catégorie — zéro chiffre dupliqué, zéro niveau visuel supplémentaire.
+* **Nouvelle constante `DIMENSION_CATEGORY`** (prefix → libellé finance), lue par `updateDimensionDisplay` et par la ligne memo Headcount dans `calculate()`.
+* **Périmètre présentation seule** : aucune formule modifiée, Total inchangé (somme des 4 dimensions), memo Headcount toujours exclu (G9) et son masquage (headcount = 0) reste directement sur `#headcountItem`, comme avant.
 
 ### Tests
 
-* **`tests/ux-regression.js` — nouveau bloc `T22`** : présence des 3 groupes et labels, sous-totaux exacts sur Scénario A (Avoidance 139 200 $ / 556 800 $, Working Capital 480 $ / 1 920 $) et Scénario B (Avoidance 259 200 $ / 1 036 800 $, memo 96 000 $ visible), Total inchangé dans les deux scénarios.
-* **`T18` adapté** : les 3 assertions de visibilité ciblent `#costSavingGroup` au lieu de `#headcountItem`.
+* **`tests/ux-regression.js` — bloc `T22`** : confirme l'absence de toute structure de groupe/sous-total, et que chaque ligne annuelle (les 4 dimensions + le memo Headcount) est préfixée par sa catégorie, sur les Scénarios A et B de CLAUDE.md. Total inchangé dans les deux scénarios.
+* **`T18`** : assertions de visibilité sur `#headcountItem` directement.
+* **`T21`** : assertion sur les libellés `Projected Annual (×12):` passée de `startsWith` à `includes`, puisque le texte commence désormais par la catégorie.
 * `tests/formula-regression.js` intouché — snapshots A/B inchangés.
 
 ---

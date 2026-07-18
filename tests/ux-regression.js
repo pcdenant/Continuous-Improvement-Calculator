@@ -570,11 +570,10 @@ function section(title) {
 
     const memoStyling = await page.evaluate(() => {
       const item = document.getElementById('headcountItem');
-      const group = document.getElementById('costSavingGroup');
       const annual = document.getElementById('headcountAnnual');
       return {
         hasMemoClass: item ? item.classList.contains('dim-row-memo') : false,
-        display: group ? getComputedStyle(group).display : null,
+        display: item ? getComputedStyle(item).display : null,
         annualText: annual ? annual.textContent : null,
       };
     });
@@ -584,11 +583,11 @@ function section(title) {
       fail('#headcountItem has .dim-row-memo class', 'class missing');
 
     if (memoStyling.display !== 'none')
-      ok(`#costSavingGroup visible when non-zero (display: ${memoStyling.display})`);
+      ok(`#headcountItem visible when non-zero (display: ${memoStyling.display})`);
     else
-      fail('#costSavingGroup visible when non-zero', 'display: none');
+      fail('#headcountItem visible when non-zero', 'display: none');
 
-    if (memoStyling.annualText === 'Memo — not included in Total')
+    if (memoStyling.annualText === 'Cost Saving · Memo — not included in Total')
       ok(`#headcountAnnual shows memo text: "${memoStyling.annualText}"`);
     else
       fail('#headcountAnnual shows memo text', `got "${memoStyling.annualText}"`);
@@ -644,10 +643,9 @@ function section(title) {
 
     const growthCheck = await page.evaluate(() => {
       const item = document.getElementById('headcountItem');
-      const group = document.getElementById('costSavingGroup');
       return {
         negative: item ? item.classList.contains('negative') : null,
-        display: group ? getComputedStyle(group).display : null,
+        display: item ? getComputedStyle(item).display : null,
       };
     });
     if (growthCheck.negative)
@@ -656,24 +654,24 @@ function section(title) {
       fail('Headcount row flips to .negative when team grows', `got class check = ${growthCheck.negative}`);
 
     if (growthCheck.display !== 'none')
-      ok(`#costSavingGroup stays visible when negative (display: ${growthCheck.display})`);
+      ok(`#headcountItem stays visible when negative (display: ${growthCheck.display})`);
     else
-      fail('#costSavingGroup stays visible when negative', 'display: none');
+      fail('#headcountItem stays visible when negative', 'display: none');
 
-    // Team unchanged → whole memo group must be hidden (nothing interesting to show)
+    // Team unchanged → row must be hidden entirely (nothing interesting to show)
     await page.fill('#teamSizeStart', '5');
     await page.fill('#teamSizeEnd', '5');
     await page.dispatchEvent('#teamSizeEnd', 'input');
     await page.waitForTimeout(150);
 
     const hiddenCheck = await page.evaluate(() => {
-      const group = document.getElementById('costSavingGroup');
-      return group ? getComputedStyle(group).display : null;
+      const item = document.getElementById('headcountItem');
+      return item ? getComputedStyle(item).display : null;
     });
     if (hiddenCheck === 'none')
-      ok('#costSavingGroup hidden when team size unchanged (headcount = 0)');
+      ok('#headcountItem hidden when team size unchanged (headcount = 0)');
     else
-      fail('#costSavingGroup hidden when team size unchanged', `got display: ${hiddenCheck}`);
+      fail('#headcountItem hidden when team size unchanged', `got display: ${hiddenCheck}`);
 
     // ─────────────────────────────────────────────────────────
     // T19 — Breakdown panel cross-check (F4): displayed numbers and
@@ -826,7 +824,7 @@ function section(title) {
       fail('Total hero label marks the period figure as observed', `got "${t21.heroLabel}"`);
 
     for (const { id, text } of t21.annualLabels) {
-      if (text.startsWith('Projected Annual (×12):'))
+      if (text.includes('Projected Annual (×12):'))
         ok(`#${id} labeled as ×12 extrapolation`);
       else
         fail(`#${id} labeled as ×12 extrapolation`, `got "${text}"`);
@@ -840,14 +838,12 @@ function section(title) {
     await pageT21.close();
 
     // ─────────────────────────────────────────────────────────
-    // T22 — Category sub-totals (F2, F5): results are grouped into
-    // Cost Avoidance (Productivity + TTM + Quality), Working Capital
-    // (Efficiency) and Cost Saving (Headcount memo). Presentation
-    // only — sub-totals are sums of the existing dimension results,
-    // the Total still equals the 4-dimension sum (G9). Uses the
-    // exact CLAUDE.md Scenario A / B values.
+    // T22 — Inline category labels, flat list (F2, F5, corrects v2.14):
+    // no wrapping section/header/sub-total — each dimension's own
+    // annual line is prefixed with its financial category instead.
+    // Uses the exact CLAUDE.md Scenario A / B values.
     // ─────────────────────────────────────────────────────────
-    section('T22 — Category sub-totals Cost Avoidance / Working Capital / Cost Saving (F2, F5)');
+    section('T22 — Inline category labels, flat summary list (F2, F5)');
 
     const pageT22 = await browser.newPage();
     await pageT22.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
@@ -863,89 +859,81 @@ function section(title) {
     await pageT22.waitForTimeout(700);
 
     const t22a = await pageT22.evaluate(() => ({
-      groups: ['avoidanceGroup', 'workingCapitalGroup', 'costSavingGroup'].map(id => !!document.getElementById(id)),
-      labels: Array.from(document.querySelectorAll('.category-header-label')).map(el => el.textContent),
-      avoidancePeriod: document.getElementById('avoidancePeriod').textContent,
-      avoidanceAnnual: document.getElementById('avoidanceAnnual').textContent,
-      wcPeriod: document.getElementById('workingCapitalPeriod').textContent,
-      wcAnnual: document.getElementById('workingCapitalAnnual').textContent,
+      noGroups: ['avoidanceGroup', 'workingCapitalGroup', 'costSavingGroup', 'avoidancePeriod', 'workingCapitalPeriod']
+        .every(id => !document.getElementById(id)),
+      noCategoryHeader: document.querySelectorAll('.category-header, .category-group').length === 0,
+      productivityAnnual: document.getElementById('productivityAnnual').textContent,
+      timeToMarketAnnual: document.getElementById('timeToMarketAnnual').textContent,
+      efficiencyAnnual: document.getElementById('efficiencyAnnual').textContent,
+      qualityAnnual: document.getElementById('qualityAnnual').textContent,
       totalPeriod: document.getElementById('totalPeriod').textContent,
-      costSavingDisplay: getComputedStyle(document.getElementById('costSavingGroup')).display,
-      expAvoidPeriod: window.formatCurrency(139200),
-      expAvoidAnnual: window.formatCurrency(556800),
-      expWcPeriod: window.formatCurrency(480),
-      expWcAnnual: window.formatCurrency(1920),
+      headcountDisplay: getComputedStyle(document.getElementById('headcountItem')).display,
       expTotal: window.formatCurrency(139680),
     }));
 
-    if (t22a.groups.every(Boolean))
-      ok('3 category groups present (#avoidanceGroup, #workingCapitalGroup, #costSavingGroup)');
+    if (t22a.noGroups)
+      ok('No leftover category-group wrapper elements (flat list restored)');
     else
-      fail('3 category groups present', `got ${JSON.stringify(t22a.groups)}`);
+      fail('No leftover category-group wrapper elements', 'a v2.14 group/subtotal id still exists in the DOM');
 
-    const expectedLabels = ['Cost Avoidance', 'Working Capital', 'Cost Saving — memo, not in Total'];
-    if (expectedLabels.every(l => t22a.labels.includes(l)))
-      ok('Category header labels match the 3 financial categories');
+    if (t22a.noCategoryHeader)
+      ok('No .category-header / .category-group elements in the DOM');
     else
-      fail('Category header labels match the 3 financial categories', `got ${JSON.stringify(t22a.labels)}`);
+      fail('No .category-header / .category-group elements in the DOM', 'leftover grouping markup found');
 
-    if (t22a.avoidancePeriod === t22a.expAvoidPeriod)
-      ok(`Scenario A: Cost Avoidance sub-total = Productivity+TTM+Quality (${t22a.avoidancePeriod})`);
-    else
-      fail('Scenario A: Cost Avoidance sub-total', `got "${t22a.avoidancePeriod}", expected "${t22a.expAvoidPeriod}"`);
-
-    if (t22a.avoidanceAnnual === `Projected Annual (×12): ${t22a.expAvoidAnnual}`)
-      ok(`Scenario A: Cost Avoidance annual sub-total labeled ×12 (${t22a.avoidanceAnnual})`);
-    else
-      fail('Scenario A: Cost Avoidance annual sub-total', `got "${t22a.avoidanceAnnual}"`);
-
-    if (t22a.wcPeriod === t22a.expWcPeriod && t22a.wcAnnual === `Projected Annual (×12): ${t22a.expWcAnnual}`)
-      ok(`Scenario A: Working Capital sub-total = Efficiency (${t22a.wcPeriod} / ${t22a.wcAnnual})`);
-    else
-      fail('Scenario A: Working Capital sub-total', `got "${t22a.wcPeriod}" / "${t22a.wcAnnual}"`);
+    const expectedCategory = {
+      productivityAnnual: 'Cost Avoidance',
+      timeToMarketAnnual: 'Cost Avoidance',
+      efficiencyAnnual: 'Working Capital',
+      qualityAnnual: 'Cost Avoidance',
+    };
+    for (const [id, category] of Object.entries(expectedCategory)) {
+      const text = t22a[id];
+      if (text.startsWith(`${category} · Projected Annual (×12):`))
+        ok(`#${id} prefixed with its category ("${category}")`);
+      else
+        fail(`#${id} prefixed with its category`, `got "${text}"`);
+    }
 
     if (t22a.totalPeriod === t22a.expTotal)
-      ok(`Scenario A: Total unchanged by restructuring (${t22a.totalPeriod})`);
+      ok(`Scenario A: Total unaffected by the category label change (${t22a.totalPeriod})`);
     else
-      fail('Scenario A: Total unchanged by restructuring', `got "${t22a.totalPeriod}", expected "${t22a.expTotal}"`);
+      fail('Scenario A: Total unaffected by the category label change', `got "${t22a.totalPeriod}", expected "${t22a.expTotal}"`);
 
-    if (t22a.costSavingDisplay === 'none')
-      ok('Scenario A: Cost Saving group hidden (team size unchanged)');
+    if (t22a.headcountDisplay === 'none')
+      ok('Scenario A: #headcountItem hidden (team size unchanged)');
     else
-      fail('Scenario A: Cost Saving group hidden', `got display: ${t22a.costSavingDisplay}`);
+      fail('Scenario A: #headcountItem hidden', `got display: ${t22a.headcountDisplay}`);
 
-    // Scenario B — team reduced 7→5: Cost Saving group appears,
-    // Avoidance moves (Productivity only), Total still excludes the memo.
+    // Scenario B — team reduced 7→5: headcount memo row appears with
+    // its own "Cost Saving ·" prefix, Total still excludes it.
     await pageT22.fill('#teamSizeStart', '7');
     await pageT22.dispatchEvent('#teamSizeStart', 'input');
     await pageT22.waitForTimeout(700);
 
     const t22b = await pageT22.evaluate(() => ({
-      avoidancePeriod: document.getElementById('avoidancePeriod').textContent,
-      avoidanceAnnual: document.getElementById('avoidanceAnnual').textContent,
+      headcountDisplay: getComputedStyle(document.getElementById('headcountItem')).display,
+      headcountAnnual: document.getElementById('headcountAnnual').textContent,
       headcountPeriod: document.getElementById('headcountPeriod').textContent,
       totalPeriod: document.getElementById('totalPeriod').textContent,
-      costSavingDisplay: getComputedStyle(document.getElementById('costSavingGroup')).display,
-      expAvoidPeriod: window.formatCurrency(259200),
-      expAvoidAnnual: window.formatCurrency(1036800),
       expHeadcount: window.formatCurrency(96000),
       expTotal: window.formatCurrency(259680),
     }));
 
-    if (t22b.avoidancePeriod === t22b.expAvoidPeriod && t22b.avoidanceAnnual === `Projected Annual (×12): ${t22b.expAvoidAnnual}`)
-      ok(`Scenario B: Cost Avoidance sub-total follows Productivity (${t22b.avoidancePeriod})`);
+    if (t22b.headcountDisplay !== 'none' && t22b.headcountPeriod === t22b.expHeadcount)
+      ok(`Scenario B: #headcountItem visible with memo value (${t22b.headcountPeriod})`);
     else
-      fail('Scenario B: Cost Avoidance sub-total', `got "${t22b.avoidancePeriod}" / "${t22b.avoidanceAnnual}"`);
+      fail('Scenario B: #headcountItem visible with memo value', `display: ${t22b.headcountDisplay}, value "${t22b.headcountPeriod}"`);
 
-    if (t22b.costSavingDisplay !== 'none' && t22b.headcountPeriod === t22b.expHeadcount)
-      ok(`Scenario B: Cost Saving group visible with memo value (${t22b.headcountPeriod})`);
+    if (t22b.headcountAnnual === 'Cost Saving · Memo — not included in Total')
+      ok(`Scenario B: #headcountAnnual prefixed with "Cost Saving" ("${t22b.headcountAnnual}")`);
     else
-      fail('Scenario B: Cost Saving group visible with memo value', `display: ${t22b.costSavingDisplay}, value "${t22b.headcountPeriod}"`);
+      fail('Scenario B: #headcountAnnual prefixed with "Cost Saving"', `got "${t22b.headcountAnnual}"`);
 
     if (t22b.totalPeriod === t22b.expTotal)
-      ok(`Scenario B: Total still excludes Cost Saving memo (${t22b.totalPeriod})`);
+      ok(`Scenario B: Total still excludes the Cost Saving memo (${t22b.totalPeriod})`);
     else
-      fail('Scenario B: Total still excludes Cost Saving memo', `got "${t22b.totalPeriod}", expected "${t22b.expTotal}"`);
+      fail('Scenario B: Total still excludes the Cost Saving memo', `got "${t22b.totalPeriod}", expected "${t22b.expTotal}"`);
 
     await pageT22.close();
 
