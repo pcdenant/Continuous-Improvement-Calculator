@@ -289,21 +289,15 @@ function section(title) {
       fail('WIP label does not say "items/month"', `got "${wipLabel}"`);
 
     // ─────────────────────────────────────────────────────────
-    // T6 — Regression: dark mode + currency toggle
+    // T6 — Regression: single theme + currency toggle
     // ─────────────────────────────────────────────────────────
-    section('T6 — Regression: dark mode + currency toggle');
+    section('T6 — Regression: single theme + currency toggle');
 
-    // Dark mode toggle
-    const beforeTheme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-    await page.click('#themeToggleBtn');
-    const afterTheme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-    if (beforeTheme !== afterTheme)
-      ok(`Theme toggle works (${beforeTheme ?? 'light'} → ${afterTheme})`);
+    // v2.15: one ink/paper theme, shared with SM Survival Score — no theme toggle
+    if (await page.locator('#themeToggleBtn').count() === 0)
+      ok('No theme toggle in the DOM (single brand theme)');
     else
-      fail('Theme toggle works', `data-theme did not change (was: ${beforeTheme})`);
-
-    // Toggle back
-    await page.click('#themeToggleBtn');
+      fail('No theme toggle in the DOM', '#themeToggleBtn still rendered');
 
     // Currency toggle — check summary value changes between $ and €
     const beforeCurrencyText = await page.locator('.summary-value').first().textContent();
@@ -343,7 +337,7 @@ function section(title) {
       fail('No horizontal overflow at 375px', 'horizontal scrollbar detected');
 
     const mobileIconBtns = await page.locator('.icon-btn').count();
-    if (mobileIconBtns >= 2)
+    if (mobileIconBtns >= 1)
       ok(`${mobileIconBtns} icon buttons present on mobile`);
     else
       fail('icon buttons present on mobile', `got ${mobileIconBtns}`);
@@ -443,34 +437,6 @@ function section(title) {
       ok(`.input-hint présent avec texte explicatif`);
     else
       fail('.input-hint Blend Rate', `got "${hintText}"`);
-
-    // ─────────────────────────────────────────────────────────
-    // T15 — SVG thème (Fix 4.2)
-    // ─────────────────────────────────────────────────────────
-    section('T15 — SVG thème (Fix 4.2)');
-
-    const hasSunSvg = await page.locator('#themeToggleBtn svg').count();
-    if (hasSunSvg > 0)
-      ok('#themeToggleBtn contient un SVG');
-    else
-      fail('#themeToggleBtn contient un SVG', 'SVG non trouvé');
-
-    const hasEmoji = await page.evaluate(() => {
-      const btn = document.getElementById('themeToggleBtn');
-      return btn ? btn.textContent.includes('☀️') || btn.textContent.includes('🌙') : false;
-    });
-    if (!hasEmoji)
-      ok('Pas d\'emoji ☀️/🌙 dans le bouton thème');
-    else
-      fail('Pas d\'emoji dans le bouton thème', 'emoji encore présent');
-
-    await page.click('#themeToggleBtn');
-    const hasMoonSvg = await page.locator('#themeToggleBtn svg').count();
-    if (hasMoonSvg > 0)
-      ok('SVG présent après toggle (mode sombre)');
-    else
-      fail('SVG présent après toggle', 'SVG non trouvé en mode sombre');
-    await page.click('#themeToggleBtn');
 
     // ─────────────────────────────────────────────────────────
     // T16 — Avertissement période < 1 mois (Fix 4.3)
@@ -936,6 +902,56 @@ function section(title) {
       fail('Scenario B: Total still excludes the Cost Saving memo', `got "${t22b.totalPeriod}", expected "${t22b.expTotal}"`);
 
     await pageT22.close();
+
+    // ─────────────────────────────────────────────────────────
+    // T23 — Text contrast ≥ 4.5:1 on the rendered DOM (v2.15 rebrand)
+    // Light port of sm-survival-score/tests/e2e/a11y-probe.js: text colour is
+    // alpha-composited over the real stacked background, not read raw.
+    // Covers the default state + a negative dimension + open tooltip + open breakdown.
+    // ─────────────────────────────────────────────────────────
+    section('T23 — Text contrast ≥ 4.5:1 (ink/paper/signal)');
+
+    const pageT23 = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    await pageT23.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
+    // Force a negative dimension so .summary-improvement.negative is rendered
+    await pageT23.fill('#defectsCurr', '20');
+    await pageT23.dispatchEvent('#defectsCurr', 'input');
+    await pageT23.click('#toggleBreakdown');
+    await pageT23.evaluate(() => document.querySelector('.tooltip-trigger').classList.add('open'));
+
+    const t23 = await pageT23.evaluate(() => {
+      const parse = c => { const m = c.match(/[\d.]+/g).map(Number); return { r: m[0], g: m[1], b: m[2], a: m[3] ?? 1 }; };
+      const over = (fg, bg) => ({ r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a), a: 1 });
+      const lum = c => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+      const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+      const bgOf = el => {
+        const layers = [];
+        for (let n = el; n; n = n.parentElement) {
+          const c = parse(getComputedStyle(n).backgroundColor);
+          if (c.a > 0) { layers.push(c); if (c.a === 1) break; }
+        }
+        return layers.reverse().reduce((acc, c) => over(c, acc), { r: 255, g: 255, b: 255, a: 1 });
+      };
+      const SELECTORS = ['h1', '.eyebrow', '.subtitle', '.icon-btn', '.section-title', 'label', '.input-hint', '.unit',
+        'input[type="number"]', '.dim-row-label', '.dim-row-annual', '.summary-value', '.summary-improvement.positive',
+        '.summary-improvement.negative', '.total-hero-label', '.total-hero-value', '.total-hero-annual', '.method-note',
+        '.btn', '.btn-secondary', '.btn-danger', '.breakdown-tab', '.breakdown-tab.active', '.breakdown-header',
+        '.breakdown-formula-title', '.breakdown-formula-text', '.breakdown-label', '.breakdown-value',
+        '.tooltip-trigger.open .tooltip-title', '.tooltip-trigger.open .tooltip-text', '.tooltip-trigger.open .tooltip-blockers-title',
+        'footer', 'footer a'];
+      return SELECTORS.map(sel => {
+        const el = [...document.querySelectorAll(sel)].find(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden');
+        if (!el) return { sel, missing: true };
+        const bg = bgOf(el);
+        return { sel, ratio: +ratio(over(parse(getComputedStyle(el).color), bg), bg).toFixed(2) };
+      });
+    });
+    for (const r of t23) {
+      if (r.missing) fail(`${r.sel} rendered for contrast check`, 'element not found or hidden');
+      else if (r.ratio >= 4.5) ok(`${r.sel} contrast ${r.ratio}:1`);
+      else fail(`${r.sel} contrast ≥ 4.5:1`, `got ${r.ratio}:1`);
+    }
+    await pageT23.close();
 
     // ─────────────────────────────────────────────────────────
     // Summary
