@@ -289,21 +289,15 @@ function section(title) {
       fail('WIP label does not say "items/month"', `got "${wipLabel}"`);
 
     // ─────────────────────────────────────────────────────────
-    // T6 — Regression: dark mode + currency toggle
+    // T6 — Regression: single theme + currency toggle
     // ─────────────────────────────────────────────────────────
-    section('T6 — Regression: dark mode + currency toggle');
+    section('T6 — Regression: single theme + currency toggle');
 
-    // Dark mode toggle
-    const beforeTheme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-    await page.click('#themeToggleBtn');
-    const afterTheme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-    if (beforeTheme !== afterTheme)
-      ok(`Theme toggle works (${beforeTheme ?? 'light'} → ${afterTheme})`);
+    // v2.15: one ink/paper theme, shared with SM Survival Score — no theme toggle
+    if (await page.locator('#themeToggleBtn').count() === 0)
+      ok('No theme toggle in the DOM (single brand theme)');
     else
-      fail('Theme toggle works', `data-theme did not change (was: ${beforeTheme})`);
-
-    // Toggle back
-    await page.click('#themeToggleBtn');
+      fail('No theme toggle in the DOM', '#themeToggleBtn still rendered');
 
     // Currency toggle — check summary value changes between $ and €
     const beforeCurrencyText = await page.locator('.summary-value').first().textContent();
@@ -343,7 +337,7 @@ function section(title) {
       fail('No horizontal overflow at 375px', 'horizontal scrollbar detected');
 
     const mobileIconBtns = await page.locator('.icon-btn').count();
-    if (mobileIconBtns >= 2)
+    if (mobileIconBtns >= 1)
       ok(`${mobileIconBtns} icon buttons present on mobile`);
     else
       fail('icon buttons present on mobile', `got ${mobileIconBtns}`);
@@ -443,34 +437,6 @@ function section(title) {
       ok(`.input-hint présent avec texte explicatif`);
     else
       fail('.input-hint Blend Rate', `got "${hintText}"`);
-
-    // ─────────────────────────────────────────────────────────
-    // T15 — SVG thème (Fix 4.2)
-    // ─────────────────────────────────────────────────────────
-    section('T15 — SVG thème (Fix 4.2)');
-
-    const hasSunSvg = await page.locator('#themeToggleBtn svg').count();
-    if (hasSunSvg > 0)
-      ok('#themeToggleBtn contient un SVG');
-    else
-      fail('#themeToggleBtn contient un SVG', 'SVG non trouvé');
-
-    const hasEmoji = await page.evaluate(() => {
-      const btn = document.getElementById('themeToggleBtn');
-      return btn ? btn.textContent.includes('☀️') || btn.textContent.includes('🌙') : false;
-    });
-    if (!hasEmoji)
-      ok('Pas d\'emoji ☀️/🌙 dans le bouton thème');
-    else
-      fail('Pas d\'emoji dans le bouton thème', 'emoji encore présent');
-
-    await page.click('#themeToggleBtn');
-    const hasMoonSvg = await page.locator('#themeToggleBtn svg').count();
-    if (hasMoonSvg > 0)
-      ok('SVG présent après toggle (mode sombre)');
-    else
-      fail('SVG présent après toggle', 'SVG non trouvé en mode sombre');
-    await page.click('#themeToggleBtn');
 
     // ─────────────────────────────────────────────────────────
     // T16 — Avertissement période < 1 mois (Fix 4.3)
