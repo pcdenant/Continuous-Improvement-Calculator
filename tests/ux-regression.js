@@ -904,6 +904,56 @@ function section(title) {
     await pageT22.close();
 
     // ─────────────────────────────────────────────────────────
+    // T23 — Text contrast ≥ 4.5:1 on the rendered DOM (v2.15 rebrand)
+    // Light port of sm-survival-score/tests/e2e/a11y-probe.js: text colour is
+    // alpha-composited over the real stacked background, not read raw.
+    // Covers the default state + a negative dimension + open tooltip + open breakdown.
+    // ─────────────────────────────────────────────────────────
+    section('T23 — Text contrast ≥ 4.5:1 (ink/paper/signal)');
+
+    const pageT23 = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+    await pageT23.goto(FILE_URL, { waitUntil: 'domcontentloaded' });
+    // Force a negative dimension so .summary-improvement.negative is rendered
+    await pageT23.fill('#defectsCurr', '20');
+    await pageT23.dispatchEvent('#defectsCurr', 'input');
+    await pageT23.click('#toggleBreakdown');
+    await pageT23.evaluate(() => document.querySelector('.tooltip-trigger').classList.add('open'));
+
+    const t23 = await pageT23.evaluate(() => {
+      const parse = c => { const m = c.match(/[\d.]+/g).map(Number); return { r: m[0], g: m[1], b: m[2], a: m[3] ?? 1 }; };
+      const over = (fg, bg) => ({ r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a), a: 1 });
+      const lum = c => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
+      const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+      const bgOf = el => {
+        const layers = [];
+        for (let n = el; n; n = n.parentElement) {
+          const c = parse(getComputedStyle(n).backgroundColor);
+          if (c.a > 0) { layers.push(c); if (c.a === 1) break; }
+        }
+        return layers.reverse().reduce((acc, c) => over(c, acc), { r: 255, g: 255, b: 255, a: 1 });
+      };
+      const SELECTORS = ['h1', '.eyebrow', '.subtitle', '.icon-btn', '.section-title', 'label', '.input-hint', '.unit',
+        'input[type="number"]', '.dim-row-label', '.dim-row-annual', '.summary-value', '.summary-improvement.positive',
+        '.summary-improvement.negative', '.total-hero-label', '.total-hero-value', '.total-hero-annual', '.method-note',
+        '.btn', '.btn-secondary', '.btn-danger', '.breakdown-tab', '.breakdown-tab.active', '.breakdown-header',
+        '.breakdown-formula-title', '.breakdown-formula-text', '.breakdown-label', '.breakdown-value',
+        '.tooltip-trigger.open .tooltip-title', '.tooltip-trigger.open .tooltip-text', '.tooltip-trigger.open .tooltip-blockers-title',
+        'footer', 'footer a'];
+      return SELECTORS.map(sel => {
+        const el = [...document.querySelectorAll(sel)].find(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden');
+        if (!el) return { sel, missing: true };
+        const bg = bgOf(el);
+        return { sel, ratio: +ratio(over(parse(getComputedStyle(el).color), bg), bg).toFixed(2) };
+      });
+    });
+    for (const r of t23) {
+      if (r.missing) fail(`${r.sel} rendered for contrast check`, 'element not found or hidden');
+      else if (r.ratio >= 4.5) ok(`${r.sel} contrast ${r.ratio}:1`);
+      else fail(`${r.sel} contrast ≥ 4.5:1`, `got ${r.ratio}:1`);
+    }
+    await pageT23.close();
+
+    // ─────────────────────────────────────────────────────────
     // Summary
     // ─────────────────────────────────────────────────────────
     console.log('\n' + '─'.repeat(50));

@@ -31,6 +31,7 @@ No abstraction for one caller, no unasked config, no future-proofing (add it the
 
 **Name:** Continuous Improvement Financial Impact Calculator  
 **Purpose:** Translates Agile flow metrics (throughput, lead time, WIP, defects) into executive-level financial impact — so Scrum Masters and Agile Coaches justify CI value to decision-makers (CFO, directors).  
+**Design system:** shared with SM Survival Score (`sm-survival-score/src/sm-survival-score.jsx`, object `T`) — ink `#15110d` page, paper `#f9f3e4` cards, signal red `#c8102e` as the only accent. CSS custom properties in `:root` mirror `T`; one theme only (no toggle since v2.15). Colours are surface-scoped: a token valid on paper is not valid on ink (`--signal` 3.19:1 on ink → use `--signal-on-ink`). Secondary text on ink uses `--on-ink-muted` (.8 alpha) only. Gains/losses use status green/red, never the brand signal. `T23` in `ux-regression.js` measures text contrast on the rendered DOM.  
 **Stack:** HTML5 + CSS3 + JS ES6+ vanilla, zero framework, zero backend, `localStorage` only, GitHub Pages.  
 **Architecture:** Single file. `index.html` (HTML + `<style>` + `<script>`). Other files: `CLAUDE.md`, `CHANGELOG.md`, `README.md`, `LICENSE`, `tests/` (`formula-regression.js` — pure Node, no browser; `ux-regression.js` — Playwright/browser).
 
@@ -38,39 +39,37 @@ No abstraction for one caller, no unasked config, no future-proofing (add it the
 
 | Function | Line | Role |
 |---|---|---|
-| `calculate` | 1828 | Main orchestrator — reads all inputs, calls 5 pure calc fns (4 dimensions + 1 memo), updates DOM |
-| `calcProductivity` | 1749 | Pure calc: returns `{ period, annual }` |
-| `calcTTM` | 1755 | Pure calc: returns `{ period, annual }` |
-| `calcEfficiency` | 1760 | Pure calc: returns `{ period, annual }` |
-| `calcQuality` | 1765 | Pure calc: returns `{ period, annual }` |
-| `calcHeadcountSaving` | 1770 | Pure calc: returns `{ period, annual }` — memo line, excluded from Total (see formulas below) |
-| `updateDimensionDisplay` | 1775 | DOM update helper — avoids 4× (now 5×) repeated DOM pattern; prefixes the annual line with the dimension's `DIMENSION_CATEGORY` label (v2.14) |
-| `getAllValues` | 1439 | Serializes all inputs to JS object |
-| `setAllValues` | 1460 | Fills inputs from object |
-| `loadFromURL` | 1493 | URL params → inputs (takes priority over localStorage) |
-| `generateShareableURL` | 1507 | Encodes all inputs as query string |
-| `calculateMonths` | 1666 | Timezone-safe month diff (fixed v2.1) |
-| `debouncedSave` | 1722 | 800ms debounce — fires after input silence, not every keystroke |
-| `migrateOldDates` | 1405 | One-shot migration purging hardcoded dates from old sessions |
-| `setDefaultDates` | 1419 | End = today, Start = 3 months prior |
-| `checkPeriodWarning` | 1731 | Shows warning if date range < 1 month |
-| `validateZeroInputs` | 1741 | Yellow border on `blendRate`/`hoursPerDay` if zero |
-| `toggleTheme` / `loadTheme` | 1553 / 1635 | Dark/light + localStorage persistence |
-| `toggleCurrency` / `loadCurrency` | 1562 / 1642 | $/€ toggle + recalculate |
-| `initTooltips` | 1572 | Click/hover with 44px touch targets via `::after` pseudo-element |
-| `showToast` | 1429 | Toast notification |
-| `clearSavedData` | 1537 | Resets to `DEFAULTS` object (line 1388) |
+| `calculate` | 1796 | Main orchestrator — reads all inputs, calls 5 pure calc fns (4 dimensions + 1 memo), updates DOM |
+| `calcProductivity` | 1717 | Pure calc: returns `{ period, annual }` |
+| `calcTTM` | 1723 | Pure calc: returns `{ period, annual }` |
+| `calcEfficiency` | 1728 | Pure calc: returns `{ period, annual }` |
+| `calcQuality` | 1733 | Pure calc: returns `{ period, annual }` |
+| `calcHeadcountSaving` | 1738 | Pure calc: returns `{ period, annual }` — memo line, excluded from Total (see formulas below) |
+| `updateDimensionDisplay` | 1743 | DOM update helper — avoids 4× (now 5×) repeated DOM pattern; prefixes the annual line with the dimension's `DIMENSION_CATEGORY` label (v2.14) |
+| `getAllValues` | 1423 | Serializes all inputs to JS object |
+| `setAllValues` | 1444 | Fills inputs from object |
+| `loadFromURL` | 1477 | URL params → inputs (takes priority over localStorage) |
+| `generateShareableURL` | 1491 | Encodes all inputs as query string |
+| `calculateMonths` | 1634 | Timezone-safe month diff (fixed v2.1) |
+| `debouncedSave` | 1690 | 800ms debounce — fires after input silence, not every keystroke |
+| `migrateOldDates` | 1389 | One-shot migration purging hardcoded dates from old sessions |
+| `setDefaultDates` | 1403 | End = today, Start = 3 months prior |
+| `checkPeriodWarning` | 1699 | Shows warning if date range < 1 month |
+| `validateZeroInputs` | 1709 | Amber (`--status-warn`) border on `blendRate`/`hoursPerDay` if zero |
+| `toggleCurrency` / `loadCurrency` | 1537 / 1610 | $/€ toggle + recalculate |
+| `initTooltips` | 1547 | Click/hover with 44px touch targets via `::after` pseudo-element |
+| `showToast` | 1413 | Toast notification |
+| `clearSavedData` | 1521 | Resets to `DEFAULTS` object (line 1372) |
 
 ### Constants
 
-- `CARRYING_RATE_MONTHLY = 0.02` (line 1378) — 2%/month ≈ 25%/year, standard inventory carrying cost
-- `DIMENSION_CATEGORY` (line 1380) — prefix → financial category label (Cost Avoidance / Working Capital / Cost Saving), read by `updateDimensionDisplay` and the Headcount memo line (v2.14)
-- `DEFAULTS` (line 1388) — source of truth for all field defaults; `clearSavedData` reads from here
-- `SVG_SUN`, `SVG_MOON` (lines 1375–1376) — inline SVGs for theme toggle (`currentColor`-aware)
+- `CARRYING_RATE_MONTHLY = 0.02` (line 1362) — 2%/month ≈ 25%/year, standard inventory carrying cost
+- `DIMENSION_CATEGORY` (line 1364) — prefix → financial category label (Cost Avoidance / Working Capital / Cost Saving), read by `updateDimensionDisplay` and the Headcount memo line (v2.14)
+- `DEFAULTS` (line 1372) — source of truth for all field defaults; `clearSavedData` reads from here
 
 ### localStorage keys
 
-`ci-calculator-data` · `theme` · `currency` · `tooltips-seen`
+`ci-calculator-data` · `currency` · `tooltips-seen` (`theme` is no longer read since v2.15 — stale values are harmless)
 
 ### URL params
 
@@ -106,7 +105,7 @@ The 4 dimensions are deliberately **not linked** to avoid double-counting via Li
 
 | Usage | Current |
 |---|---|
-| Fonts | Google Fonts CDN (Inter + JetBrains Mono) |
+| Fonts | Google Fonts CDN (Archivo + IBM Plex Sans + IBM Plex Mono — same as SM Survival Score) |
 | Dates | native `Date` API |
 | Persistence | native `localStorage` |
 | Sharing | native `URLSearchParams` |
@@ -118,7 +117,7 @@ Rule: Can it be done natively in < 20 lines? Yes → do it. No → propose, just
 
 Conventional Commits: `feat` / `fix` / `refactor` / `docs` / `style` / `test`.  
 Branches: `main` (prod, auto-deploys to GitHub Pages) · `feat/[name]` · `fix/[name]`.  
-Pre-commit gate: no `console.log` · `node tests/formula-regression.js` (formulas) · `node tests/ux-regression.js` (UI/breakdown) · open `index.html` in browser · test dark mode + currency toggle.
+Pre-commit gate: no `console.log` · `node tests/formula-regression.js` (formulas) · `node tests/ux-regression.js` (UI/breakdown) · open `index.html` in browser · test currency toggle.
 
 ### Regression snapshot — Scenario A (v2.8 baseline, team unchanged)
 
@@ -166,7 +165,7 @@ Uses year/month arithmetic, not string subtraction, to be timezone-safe. This fi
 Do not link them through Little's Law or any shared derived variable. Independence prevents double-counting — intentional since v1 (Excel prototype).
 
 **G4 — `DEFAULTS` is the source of truth for reset.**  
-`clearSavedData` resets to `DEFAULTS` (line 1593). Every new input field must be added there or it won't clear correctly. The HTML `value=` attributes must mirror `DEFAULTS` — first load and "Clear Saved Data" tell the same demo story (v2.11, F7) — enforced by ux-regression `T20`.
+`clearSavedData` resets to `DEFAULTS` (line 1372). Every new input field must be added there or it won't clear correctly. The HTML `value=` attributes must mirror `DEFAULTS` — first load and "Clear Saved Data" tell the same demo story (v2.11, F7) — enforced by ux-regression `T20`.
 
 **G5 — `loadFromURL` takes priority over localStorage.**  
 URL params always win. Intentional — enables scenario sharing via link. Do not change this load order.
@@ -185,4 +184,4 @@ It reuses `teamSizeStart`/`teamSizeEnd`, which already feed `costPerItemCurr` an
 
 ---
 
-*Updated: 2026-07-15*
+*Updated: 2026-09-27*

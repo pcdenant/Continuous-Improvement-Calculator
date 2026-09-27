@@ -4,6 +4,29 @@ All notable changes to the CI Financial Impact Calculator are documented here.
 
 ---
 
+## [v2.15] — 2026-09-27
+
+### Changed — Design system aligné sur SM Survival Score
+
+* **Nouveau branding Collaboration Solved** : fond encre `#15110d`, cartes papier `#f9f3e4`, un seul accent rouge signal `#c8102e`. Mêmes tokens que l'objet `T` de SM Survival Score, recopiés en variables CSS dans `:root`. L'ancien branding vert / jaune / crème disparaît.
+* **Typographie** : Archivo (titres), IBM Plex Sans (texte), IBM Plex Mono (chiffres). Remplace Plus Jakarta Sans + JetBrains Mono.
+* **Un seul thème** : le toggle clair/sombre est supprimé (`toggleTheme`, `loadTheme`, `SVG_SUN`, `SVG_MOON`). La clé localStorage `theme` n'est plus lue.
+* **Gains / pertes en couleurs de statut** : % positif en vert `#3fae74`, négatif en rouge `#e75248`. Le rouge de marque reste réservé aux CTA et aux titres — un gain en rouge se lirait comme une perte.
+* **Composants** : cartes plates arrondies à 20px (sans ombre ni lift), inputs et boutons à 10px, boutons 14px en casse normale et 48px de haut minimum, bouton devise à 48px, surtitre « Collaboration Solved » dans le header, footer avec liens soulignés.
+* **Focus visible** : anneau papier + halo signal sur l'encre (le contour sombre par défaut y était invisible), contour signal sur les inputs. Le `outline: none` des inputs est retiré.
+
+### Fixed — Contraste AA
+
+* Six textes secondaires sur fond sombre échouaient AA (2.9 à 3.9:1) : lignes annuelles, libellé et ligne annuelle du total, note de méthode, % négatif, bouton « Clear Saved Data ». Tous passent à `--on-ink-muted` (alpha .8 unique) ou aux couleurs de statut.
+
+### Tests
+
+* **`T23`** (nouveau) : contraste ≥ 4.5:1 mesuré sur le DOM rendu, avec composition alpha, sur 33 éléments (état par défaut, dimension négative, tooltip ouvert, breakdown ouvert). Version allégée de `a11y-probe.js` de SM Survival Score.
+* **`T6`** : vérifie l'absence du toggle de thème. **`T15`** (SVG du thème) supprimé. `T6b` : au moins 1 icon-button sur mobile (au lieu de 2).
+* `tests/formula-regression.js` intouché — snapshots A/B inchangés.
+
+---
+
 ## [v2.14] — 2026-07-15
 
 ### Added — Étiquette de catégorie financière par ligne (F2, F5, RICE)
