@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Pierre-Cyril Denant">
     <title>Continuous Improvement Financial Impact Calculator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --cream: #FBF3EB;
@@ -24,6 +24,10 @@
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            /* Same type system as SM Survival Score (T.f / T.fHeading / T.fMono) */
+            --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-heading: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'IBM Plex Mono', Menlo, Consolas, monospace;
         }
 
         [data-theme="dark"] {
@@ -49,7 +53,7 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: var(--font-body);
             background: var(--cream);
             color: var(--text-primary);
             line-height: 1.6;
@@ -97,6 +101,7 @@
         }
 
         .header-content h1 {
+            font-family: var(--font-heading);
             font-size: clamp(1.75rem, 4vw, 2.5rem);
             font-weight: 700;
             color: var(--yellow);
@@ -128,7 +133,7 @@
             border-radius: 10px;
             cursor: pointer;
             font-size: 1rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-weight: 600;
             color: rgba(255, 255, 255, 0.85);
             box-shadow: none;
@@ -182,7 +187,7 @@
             color: var(--green);
             margin-bottom: 1.5rem;
             font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-heading);
             padding-bottom: 0.625rem;
             border-bottom: 1px solid var(--border);
         }
@@ -256,7 +261,7 @@
             padding: 0.75rem 1rem;
             border-radius: 4px;
             font-size: 0.9375rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             transition: all 0.2s;
         }
 
@@ -272,7 +277,7 @@
             right: 1rem;
             color: var(--text-muted);
             font-size: 0.8125rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             pointer-events: none;
         }
 
@@ -325,7 +330,7 @@
 
         .dim-row-label {
             font-size: 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-body);
             text-transform: uppercase;
             letter-spacing: 0.08em;
             color: rgba(255, 255, 255, 0.65);
@@ -334,7 +339,7 @@
         .dim-row-annual {
             font-size: 0.6875rem;
             color: rgba(255, 255, 255, 0.4);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
         }
 
         .dim-row-right {
@@ -369,7 +374,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-body);
             flex-shrink: 0;
             transition: transform 0.15s ease;
             position: relative;
@@ -479,7 +484,7 @@
         }
 
         .summary-value {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 1.25rem;
             font-weight: 700;
             color: white;
@@ -499,7 +504,7 @@
 
         .summary-improvement {
             font-size: 0.8125rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-weight: 600;
             min-width: 4.5rem;
             text-align: right;
@@ -529,7 +534,7 @@
 
         .total-hero-label {
             font-size: 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-body);
             text-transform: uppercase;
             letter-spacing: 0.12em;
             color: rgba(255, 255, 255, 0.5);
@@ -537,7 +542,7 @@
         }
 
         .total-hero-value {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: clamp(2.5rem, 6vw, 3.75rem);
             font-weight: 700;
             color: white;
@@ -549,7 +554,7 @@
         .total-hero-annual {
             font-size: 0.875rem;
             color: rgba(255, 255, 255, 0.5);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
         }
 
         /* Method note — observed vs extrapolated disclosure (F3, v2.12) */
@@ -595,7 +600,7 @@
             border: 1px solid var(--yellow);
             padding: 0.75rem 1.25rem;
             border-radius: 0;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-body);
             font-size: 0.6875rem;
             font-weight: 700;
             cursor: pointer;
@@ -619,7 +624,7 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             padding: 0.75rem 1.25rem;
             border-radius: 0;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-body);
             font-size: 0.6875rem;
             font-weight: 600;
             cursor: pointer;
@@ -639,7 +644,7 @@
             border: 1px solid rgba(255, 149, 0, 0.6);
             padding: 0.75rem 1.25rem;
             border-radius: 0;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-body);
             font-size: 0.6875rem;
             font-weight: 600;
             cursor: pointer;
@@ -683,7 +688,7 @@
             border: none;
             border-bottom: 2px solid transparent;
             margin-bottom: -1px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-body);
             font-size: 0.625rem;
             font-weight: 700;
             text-transform: uppercase;
@@ -712,7 +717,7 @@
         }
 
         .breakdown-header {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-heading);
             font-size: 0.9375rem;
             color: var(--yellow);
             margin-bottom: 1rem;
@@ -736,7 +741,7 @@
         }
 
         .breakdown-formula-text {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 0.875rem;
             color: white;
             margin-bottom: 0.5rem;
@@ -762,7 +767,7 @@
             text-transform: uppercase;
             letter-spacing: 0.08em;
             color: rgba(255, 255, 255, 0.5);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-body);
             white-space: nowrap;
         }
 
@@ -770,7 +775,7 @@
             font-size: 0.9375rem;
             font-weight: 600;
             color: var(--yellow);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
         }
 
         .breakdown-rationale-text {
@@ -798,7 +803,7 @@
         }
 
         .breakdown-value {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             color: white;
             font-weight: 500;
         }
@@ -812,7 +817,7 @@
             color: white;
             padding: 1rem 1.5rem;
             border-radius: 12px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: var(--font-body);
             font-size: 0.875rem;
             font-weight: 600;
             opacity: 0;
@@ -839,7 +844,7 @@
         }
 
         .footer-version {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 0.75rem;
             margin-top: 0.5rem;
             opacity: 0.7;
